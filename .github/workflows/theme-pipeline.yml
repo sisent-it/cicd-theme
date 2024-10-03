@@ -21,12 +21,6 @@ on:
       REACT_APP_FRONT_AUTHENTIFICATION:
         required: true
         type: string
-      TOKEN_GITHUB:
-        required: true
-        type: string
-      KUBECONFIG:
-        required: true
-        type: string
     secrets:
       TOKEN_GITHUB:
         required: true
