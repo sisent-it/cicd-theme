@@ -1,0 +1,107 @@
+name: Theme Pipeline CICD
+
+on:
+  workflow_call:  # Cette commande permet à d'autres repositories d'utiliser ce workflow
+    inputs:
+      REACT_APP_API_AUTH_URL:
+        required: true
+        type: string
+      REACT_APP_API_COMPONENT_URL:
+        required: true
+        type: string
+      REACT_APP_URL:
+        required: true
+        type: string
+      REACT_APP_THEME:
+        required: true
+        type: string
+      REACT_APP_ENV:
+        required: true
+        type: string
+      REACT_APP_FRONT_AUTHENTIFICATION:
+        required: true
+        type: string
+    secrets:
+      TOKEN_GITHUB:
+        required: true
+      KUBECONFIG:
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '21.7.3'
+
+    - name: Create .env file
+      run: |
+        echo "REACT_APP_API_AUTH_URL=${{ inputs.REACT_APP_API_AUTH_URL }}" >> .env
+        echo "REACT_APP_API_COMPONENT_URL=${{ inputs.REACT_APP_API_COMPONENT_URL }}" >> .env
+        echo "REACT_APP_URL=${{ inputs.REACT_APP_URL }}" >> .env
+        echo "REACT_APP_THEME=${{ inputs.REACT_APP_THEME }}" >> .env
+        echo "REACT_APP_ENV=${{ inputs.REACT_APP_ENV }}" >> .env
+        echo "REACT_APP_FRONT_AUTHENTIFICATION=${{ inputs.REACT_APP_FRONT_AUTHENTIFICATION }}" >> .env
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run build
+      run: npm run build
+
+  deploy_pfv:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Create .env file
+      run: |
+        echo "REACT_APP_API_AUTH_URL=${{ inputs.REACT_APP_API_AUTH_URL }}" >> .env
+        echo "REACT_APP_API_COMPONENT_URL=${{ inputs.REACT_APP_API_COMPONENT_URL }}" >> .env
+        echo "REACT_APP_URL=${{ inputs.REACT_APP_URL }}" >> .env
+        echo "REACT_APP_THEME=${{ inputs.REACT_APP_THEME }}" >> .env
+        echo "REACT_APP_ENV=pfv" >> .env
+        echo "REACT_APP_FRONT_AUTHENTIFICATION=${{ inputs.REACT_APP_FRONT_AUTHENTIFICATION }}" >> .env
+
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.token_github }}
+
+    - name: Build and push Docker image
+      run: |
+        docker buildx create --use
+        docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/${{ github.repository }}:latest --push .
+
+    - name: Checkout Helm Chart Repository
+      uses: actions/checkout@v3
+      with:
+        repository: sisent-it/helm-theme-renaissance
+        path: helm-chart
+        ref: main 
+        token: ${{ inputs.TOKEN_GITHUB }}
+
+    - name: Install Helm
+      run: |
+        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+    - name: Configure kubeconfig
+      run: |
+        mkdir -p ~/.kube
+        echo "${{ inputs.KUBECONFIG }}" > ~/.kube/config
+
+    - name: Upgrade Helm Release
+      run: |
+        helm upgrade --install default-${{ github.event.repository.name }} ./helm-chart --values ./helm-chart/env/pfv/values.yaml --recreate-pods
