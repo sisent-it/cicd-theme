@@ -2,9 +2,6 @@ name: Test Build Pipeline CICD
 
 on:
   workflow_call:  # Cette commande permet à d'autres repositories d'utiliser ce workflow
-      REACT_APP_ENV:
-        required: true
-        type: string
 
 jobs:
   build:
