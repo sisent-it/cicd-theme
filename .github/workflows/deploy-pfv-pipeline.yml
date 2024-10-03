@@ -3,29 +3,9 @@ name: Theme Pipeline CICD
 on:
   workflow_call:  # Cette commande permet à d'autres repositories d'utiliser ce workflow
     inputs:
-      REACT_APP_API_AUTH_URL:
-        required: true
-        type: string
-      REACT_APP_API_COMPONENT_URL:
-        required: true
-        type: string
-      REACT_APP_URL:
-        required: true
-        type: string
-      REACT_APP_THEME:
-        required: true
-        type: string
       REACT_APP_ENV:
         required: true
         type: string
-      REACT_APP_FRONT_AUTHENTIFICATION:
-        required: true
-        type: string
-    secrets:
-      TOKEN_GITHUB:
-        required: true
-      KUBECONFIG:
-        required: true
 
 jobs:
   build:
