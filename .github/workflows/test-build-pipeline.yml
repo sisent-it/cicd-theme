@@ -18,7 +18,7 @@ jobs:
 
     - name: Create .env file
       run: |
-        echo "REACT_APP_API_AUTH_URL=${{ secrets.REACT_APP_API_AUTH_URL_PFV }}" >> .env
+        echo "REACT_APP_API_AUTH_URL=${{ vars.REACT_APP_API_AUTH_URL }}" >> .env
         echo "REACT_APP_API_COMPONENT_URL=${{ secrets.REACT_APP_API_COMPONENT_URL_PFV }}" >> .env
         echo "REACT_APP_URL=${{ inputs.REACT_APP_URL }}" >> .env
         echo "REACT_APP_THEME=${{ inputs.REACT_APP_THEME }}" >> .env
