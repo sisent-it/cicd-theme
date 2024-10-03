@@ -18,12 +18,12 @@ jobs:
 
     - name: Create .env file
       run: |
-        echo "REACT_APP_API_AUTH_URL=${{ inputs.REACT_APP_API_AUTH_URL }}" >> .env
-        echo "REACT_APP_API_COMPONENT_URL=${{ inputs.REACT_APP_API_COMPONENT_URL }}" >> .env
+        echo "REACT_APP_API_AUTH_URL=${{ secrets.REACT_APP_API_AUTH_URL_PFV }}" >> .env
+        echo "REACT_APP_API_COMPONENT_URL=${{ secrets.REACT_APP_API_COMPONENT_URL_PFV }}" >> .env
         echo "REACT_APP_URL=${{ inputs.REACT_APP_URL }}" >> .env
         echo "REACT_APP_THEME=${{ inputs.REACT_APP_THEME }}" >> .env
         echo "REACT_APP_ENV=${{ inputs.REACT_APP_ENV }}" >> .env
-        echo "REACT_APP_FRONT_AUTHENTIFICATION=${{ inputs.REACT_APP_FRONT_AUTHENTIFICATION }}" >> .env
+        echo "REACT_APP_FRONT_AUTHENTIFICATION=${{ secrets.REACT_APP_FRONT_AUTHENTIFICATION_PFV }}" >> .env
 
     - name: Install dependencies
       run: npm install
