@@ -27,6 +27,11 @@ on:
       KUBECONFIG:
         required: true
         type: string
+    secrets:
+      TOKEN_GITHUB:
+        required: true
+      KUBECONFIG:
+        required: true
 
 jobs:
   build:
