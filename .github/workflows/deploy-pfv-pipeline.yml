@@ -119,8 +119,11 @@ jobs:
 
     - name: Configure kubeconfig
       run: |
+    - name: Configure kubeconfig
+      run: |
         mkdir -p ~/.kube
-        echo "${{ inputs.KUBECONFIG_PFV }}" > ~/.kube/config
+        echo "${{ inputs.KUBECONFIG_PFV }}" | base64 --decode > ~/.kube/config
+        sed -i '1s/^/---\n/' ~/.kube/config
         yamllint ~/.kube/config
         cat ~/.kube/config
         
