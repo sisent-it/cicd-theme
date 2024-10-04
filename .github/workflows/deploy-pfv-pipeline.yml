@@ -59,19 +59,39 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-      
-    - name: Call Test Build Pipeline
-      uses: ./.github/workflows/test-build-pipeline.yml
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
       with:
-        REACT_APP_API_AUTH_URL_PFV: ${{ inputs.REACT_APP_API_AUTH_URL_PFV }}
-        REACT_APP_API_AUTH_URL_PRD: ${{ inputs.REACT_APP_API_AUTH_URL_PRD }}
-        REACT_APP_API_COMPONENT_URL_PFV: ${{ inputs.REACT_APP_API_COMPONENT_URL_PFV }}
-        REACT_APP_API_COMPONENT_URL_PRD: ${{ inputs.REACT_APP_API_COMPONENT_URL_PRD }}
-        REACT_APP_URL: ${{ inputs.REACT_APP_URL }}
-        REACT_APP_THEME: ${{ inputs.REACT_APP_THEME }}
-        REACT_APP_ENV: ${{ inputs.REACT_APP_ENV }}
-        REACT_APP_FRONT_AUTHENTIFICATION_PFV: ${{ inputs.REACT_APP_FRONT_AUTHENTIFICATION_PFV }}
-        REACT_APP_FRONT_AUTHENTIFICATION_PRD: ${{ inputs.REACT_APP_FRONT_AUTHENTIFICATION_PRD }}
+        node-version: '21.7.3'
+
+    # Vérifier si les variables d'entrée ne sont pas vides
+    - name: Check input variables
+      run: |
+        if [ -z "${{ inputs.REACT_APP_API_AUTH_URL_PFV }}" ] || [ -z "${{ inputs.REACT_APP_API_AUTH_URL_PRD }}" ] || \
+           [ -z "${{ inputs.REACT_APP_API_COMPONENT_URL_PFV }}" ] || [ -z "${{ inputs.REACT_APP_API_COMPONENT_URL_PRD }}" ] || \
+           [ -z "${{ inputs.REACT_APP_URL }}" ] || [ -z "${{ inputs.REACT_APP_THEME }}" ] || \
+           [ -z "${{ inputs.REACT_APP_ENV }}" ] || [ -z "${{ inputs.REACT_APP_FRONT_AUTHENTIFICATION_PFV }}" ] || \
+           [ -z "${{ inputs.REACT_APP_FRONT_AUTHENTIFICATION_PRD }}" ] || [ -z "${{ inputs.TOKEN_GITHUB }}" ] || \
+           [ -z "${{ inputs.KUBECONFIG_PFV }}" ] || [ -z "${{ inputs.KUBECONFIG_PRD }}" ]; then
+          echo "Error: One or more required input variables are missing."
+          exit 1
+        fi
+      shell: bash
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run build
+      run: npm run build
+
+    # Test du Dockerfile pour vérifier la construction de l'image
+    - name: Build Docker image
+      run: |
+        docker build -t my-app:latest .
+      # Vérifier si Docker est installé
+      env:
+        DOCKER_BUILDKIT: 1  # Utilise BuildKit pour des builds plus rapides et plus efficaces
 
   deploy_pfv:
     runs-on: ubuntu-latest
