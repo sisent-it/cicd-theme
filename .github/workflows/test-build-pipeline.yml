@@ -1,7 +1,44 @@
 name: Test Build Pipeline CICD
 
 on:
-  workflow_call:  # Cette commande permet à d'autres repositories d'utiliser ce workflow
+  workflow_call:
+    inputs:
+      REACT_APP_API_AUTH_URL_PFV:
+        description: "URL de l'API Auth PFV"
+        required: true
+        type: string
+      REACT_APP_API_AUTH_URL_PRD:
+        description: "URL de l'API Auth PRD"
+        required: true
+        type: string
+      REACT_APP_API_COMPONENT_URL_PFV:
+        description: "URL de l'API Component PFV"
+        required: true
+        type: string
+      REACT_APP_API_COMPONENT_URL_PRD:
+        description: "URL de l'API Component PRD"
+        required: true
+        type: string
+      REACT_APP_URL:
+        description: "URL de l'application"
+        required: true
+        type: string
+      REACT_APP_THEME:
+        description: "Thème de l'application"
+        required: true
+        type: string
+      REACT_APP_ENV:
+        description: "Environnement de l'application"
+        required: true
+        type: string
+      REACT_APP_FRONT_AUTHENTIFICATION_PFV:
+        description: "URL de l'authentification front PFV"
+        required: true
+        type: string
+      REACT_APP_FRONT_AUTHENTIFICATION_PRD:
+        description: "URL de l'authentification front PRD"
+        required: true
+        type: string
 
 jobs:
   build:
@@ -16,17 +53,30 @@ jobs:
       with:
         node-version: '21.7.3'
 
-    - name: Create .env file
+    # Vérifier si les variables d'entrée ne sont pas vides
+    - name: Check input variables
       run: |
-        echo "REACT_APP_API_AUTH_URL=${{ vars.REACT_APP_API_AUTH_URL }}" >> .env
-        echo "REACT_APP_API_COMPONENT_URL=${{ secrets.REACT_APP_API_COMPONENT_URL_PFV }}" >> .env
-        echo "REACT_APP_URL=${{ inputs.REACT_APP_URL }}" >> .env
-        echo "REACT_APP_THEME=${{ inputs.REACT_APP_THEME }}" >> .env
-        echo "REACT_APP_ENV=${{ inputs.REACT_APP_ENV }}" >> .env
-        echo "REACT_APP_FRONT_AUTHENTIFICATION=${{ secrets.REACT_APP_FRONT_AUTHENTIFICATION_PFV }}" >> .env
+        if [ -z "${{ inputs.REACT_APP_API_AUTH_URL_PFV }}" ] || [ -z "${{ inputs.REACT_APP_API_AUTH_URL_PRD }}" ] || \
+           [ -z "${{ inputs.REACT_APP_API_COMPONENT_URL_PFV }}" ] || [ -z "${{ inputs.REACT_APP_API_COMPONENT_URL_PRD }}" ] || \
+           [ -z "${{ inputs.REACT_APP_URL }}" ] || [ -z "${{ inputs.REACT_APP_THEME }}" ] || \
+           [ -z "${{ inputs.REACT_APP_ENV }}" ] || [ -z "${{ inputs.REACT_APP_FRONT_AUTHENTIFICATION_PFV }}" ] || \
+           [ -z "${{ inputs.REACT_APP_FRONT_AUTHENTIFICATION_PRD }}" ]; then
+          echo "Error: One or more required input variables are missing."
+          exit 1
+        fi
+      shell: bash
 
     - name: Install dependencies
       run: npm install
 
     - name: Run build
       run: npm run build
+
+    # Test du Dockerfile pour vérifier la construction de l'image
+    - name: Build Docker image
+      run: |
+        docker build -t my-app:latest .
+      # Vérifier si Docker est installé
+      env:
+        DOCKER_BUILDKIT: 1  # Utilise BuildKit pour des builds plus rapides et plus efficaces
+
