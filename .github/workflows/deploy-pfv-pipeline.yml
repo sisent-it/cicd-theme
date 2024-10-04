@@ -43,11 +43,15 @@ on:
         description: "GitHub Token for repository access"
         required: true
         type: string
-      KUBECONFIG:
-        description: "Kubeconfig for Helm"
+      KUBECONFIG_PFV:
+        description: "Kubeconfig pfv for Helm"
         required: true
         type: string
-
+      KUBECONFIG_PRD:
+        description: "Kubeconfig prd for Helm"
+        required: true
+        type: string
+      
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -111,8 +115,8 @@ jobs:
     - name: Configure kubeconfig
       run: |
         mkdir -p ~/.kube
-        echo "${{ inputs.KUBECONFIG }}" > ~/.kube/config
+        echo "${{ inputs.KUBECONFIG_PFV }}" > ~/.kube/config
 
-    - name: Upgrade Helm Release
+    - name: Upgrade pfv Helm Release
       run: |
         helm upgrade --install default-${{ github.event.repository.name }} ./helm-chart --values ./helm-chart/env/pfv/values.yaml --recreate-pods
