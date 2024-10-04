@@ -39,7 +39,19 @@ on:
         description: "URL de l'authentification front PRD"
         required: true
         type: string
-
+      TOKEN_GITHUB:
+        description: "GitHub Token for repository access"
+        required: true
+        type: string
+      KUBECONFIG_PFV:
+        description: "Kubeconfig pfv for Helm"
+        required: true
+        type: string
+      KUBECONFIG_PRD:
+        description: "Kubeconfig prd for Helm"
+        required: true
+        type: string
+  
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -60,7 +72,8 @@ jobs:
            [ -z "${{ inputs.REACT_APP_API_COMPONENT_URL_PFV }}" ] || [ -z "${{ inputs.REACT_APP_API_COMPONENT_URL_PRD }}" ] || \
            [ -z "${{ inputs.REACT_APP_URL }}" ] || [ -z "${{ inputs.REACT_APP_THEME }}" ] || \
            [ -z "${{ inputs.REACT_APP_ENV }}" ] || [ -z "${{ inputs.REACT_APP_FRONT_AUTHENTIFICATION_PFV }}" ] || \
-           [ -z "${{ inputs.REACT_APP_FRONT_AUTHENTIFICATION_PRD }}" ]; then
+           [ -z "${{ inputs.REACT_APP_FRONT_AUTHENTIFICATION_PRD }}" ] || [ -z "${{ inputs.TOKEN_GITHUB }}" ] || \
+           [ -z "${{ inputs.KUBECONFIG_PFV }}" ] || [ -z "${{ inputs.KUBECONFIG_PRD }}" ]; then
           echo "Error: One or more required input variables are missing."
           exit 1
         fi
@@ -79,4 +92,3 @@ jobs:
       # Vérifier si Docker est installé
       env:
         DOCKER_BUILDKIT: 1  # Utilise BuildKit pour des builds plus rapides et plus efficaces
-
