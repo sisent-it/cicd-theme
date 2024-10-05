@@ -145,11 +145,10 @@ jobs:
         helm upgrade --install default-${{ github.event.repository.name }} --namespace site ./helm-chart \
           --values ./helm-chart/values.yaml \
           --set release_name=${{ inputs.REACT_APP_THEME }} \
-          --set image.repository=ghcr.io/sisent-it/${{ github.repository }}
+          --set image.repository=ghcr.io/sisent-it/${{ github.repository }} \
           --set ingress.className=nginx \
           --set ingress.hosts[0].host=${{ github.event.repository.name }}.myhappyweb.com \
           --set ingress.hosts[0].paths[0]=/ \
           --set ingress.tls[0].hosts[0]=theme-${{ github.event.repository.name }}.myhappyweb.com \
           --set ingress.tls[0].secretName=nginx-ingress-tls \
           --recreate-pods
-      
