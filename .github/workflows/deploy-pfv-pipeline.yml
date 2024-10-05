@@ -79,19 +79,19 @@ jobs:
         fi
       shell: bash
 
-    - name: Install dependencies
-      run: npm install
+   # - name: Install dependencies
+   #   run: npm install
 
-    - name: Run build
-      run: npm run build
+   # - name: Run build
+   #   run: npm run build
 
     # Test du Dockerfile pour vérifier la construction de l'image
-    - name: Build Docker image
-      run: |
-        docker build -t my-app:latest .
+    #- name: Build Docker image
+    #  run: |
+    #    docker build -t my-app:latest .
       # Vérifier si Docker est installé
-      env:
-        DOCKER_BUILDKIT: 1  # Utilise BuildKit pour des builds plus rapides et plus efficaces
+    #  env:
+    #    DOCKER_BUILDKIT: 1  # Utilise BuildKit pour des builds plus rapides et plus efficaces
 
   deploy_pfv:
     runs-on: ubuntu-latest
@@ -118,10 +118,10 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ inputs.TOKEN_GITHUB }}
 
-    - name: Build and push Docker image
-      run: |
-        docker buildx create --use
-        docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/${{ github.repository }}:latest --push .
+   # - name: Build and push Docker image
+   #   run: |
+   #     docker buildx create --use
+   #     docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/${{ github.repository }}:latest --push .
 
     - name: Checkout Helm Chart Repository
       uses: actions/checkout@v3
@@ -142,15 +142,15 @@ jobs:
 
     - name: Upgrade pfv Helm Release
       run: |
-        helm upgrade --install default-${{ github.event.repository.name }} ./helm-chart \
+        helm upgrade --install default-theme-jetestencore2 ./helm-chart \
           --values ./helm-chart/values.yaml \
-          --set release_name=${{ inputs.REACT_APP_THEME }} \
-          --set image.repository=ghcr.io/${{ github.repository }} \
+          --set release_name=jetestencore2 \
+          --set image.repository=ghcr.io/sisent-it/theme-jetestencore2 \
           --set image.tag=latest \
           --set ingress.className=nginx \
-          --set ingress.hosts[0].host=${{ github.event.repository.name }}.myhappyweb.com \
+          --set ingress.hosts[0].host=theme-jetestencore2.myhappyweb.com \
           --set ingress.hosts[0].paths[0]=/ \
-          --set ingress.tls[0].hosts[0]=${{ github.event.repository.name }}.myhappyweb.com \
-          --set ingress.tls[0].secretName=nginx-ingress-tls \    
+          --set ingress.tls[0].hosts[0]=theme-jetestencore2.myhappyweb.com \
+          --set ingress.tls[0].secretName=nginx-ingress-tls \
           --recreate-pods
       
