@@ -146,9 +146,5 @@ jobs:
           --values ./helm-chart/values.yaml \
           --set release_name=${{ inputs.REACT_APP_THEME }} \
           --set image.repository=ghcr.io/${{ github.repository }} \
-          --set ingress.className=nginx \
-          --set ingress.hosts[0].host=${{ github.event.repository.name }}.myhappyweb.com \
-          --set ingress.hosts[0].paths[0]=/ \
-          --set ingress.tls[0].hosts[0]=theme-${{ github.event.repository.name }}.myhappyweb.com \
-          --set ingress.tls[0].secretName=nginx-ingress-tls \
+          --set image.tag=latest \
           --recreate-pods
