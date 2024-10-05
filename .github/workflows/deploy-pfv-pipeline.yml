@@ -144,7 +144,7 @@ jobs:
       run: |
         helm upgrade --install default-${{ github.event.repository.name }}-myhappyweb-com --namespace site ./helm-chart \
           --values ./helm-chart/values.yaml \
-          --set release_name=${{ inputs.REACT_APP_THEME }} \
+          --set release_name=${{ inputs.REACT_APP_THEME }}-myhappyweb-com \
           --set image.repository=ghcr.io/${{ github.repository }} \
           --set image.tag=latest \
           --recreate-pods
