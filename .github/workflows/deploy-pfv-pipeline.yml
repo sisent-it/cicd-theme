@@ -142,7 +142,7 @@ jobs:
 
     - name: Upgrade pfv Helm Release
       run: |
-        helm upgrade --install default-theme-jetestencore2 ./helm-chart \
+        helm upgrade --install default-theme-jetestencore2 --namespace site ./helm-chart \
           --values ./helm-chart/values.yaml \
           --set release_name=jetestencore2 \
           --set image.repository=ghcr.io/sisent-it/theme-jetestencore2 \
