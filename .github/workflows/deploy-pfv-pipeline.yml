@@ -142,7 +142,7 @@ jobs:
 
     - name: Upgrade pfv Helm Release
       run: |
-        helm upgrade --install default-${{ github.repository }} --namespace site ./helm-chart \
+        helm upgrade --install default-theme-${{ inputs.REACT_APP_THEME }} --namespace site ./helm-chart \
           --values ./helm-chart/values.yaml \
           --set release_name=${{ github.repository }} \
           --set image.repository=ghcr.io/sisent-it/${{ github.repository }}
