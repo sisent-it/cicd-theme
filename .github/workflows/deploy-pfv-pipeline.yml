@@ -126,7 +126,7 @@ jobs:
     - name: Checkout Helm Chart Repository
       uses: actions/checkout@v3
       with:
-        repository: sisent-it/helm-theme-renaissance
+        repository: sisent-it/helm-theme
         path: helm-chart
         ref: main 
         token: ${{ inputs.TOKEN_GITHUB }}
@@ -142,4 +142,15 @@ jobs:
 
     - name: Upgrade pfv Helm Release
       run: |
-        helm upgrade --install default-${{ github.event.repository.name }} ./helm-chart --values ./helm-chart/env/pfv/values.yaml --recreate-pods
+        helm upgrade --install default-${{ github.event.repository.name }} ./helm-chart \
+          --values ./helm-chart/values.yaml \
+          --set release_name=${{ inputs.REACT_APP_THEME }} \
+          --set image.repository=ghcr.io/${{ github.repository }} \
+          --set image.tag=latest \
+          --set ingress.className=nginx \
+          --set ingress.hosts[0].host=${{ github.event.repository.name }}.myhappyweb.com \
+          --set ingress.hosts[0].paths[0]=/ \
+          --set ingress.tls[0].hosts[0]=${{ github.event.repository.name }}.myhappyweb.com \
+          --set ingress.tls[0].secretName=nginx-ingress-tls \    
+          --recreate-pods
+      
