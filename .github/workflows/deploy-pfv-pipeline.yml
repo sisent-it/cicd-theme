@@ -142,15 +142,14 @@ jobs:
 
     - name: Upgrade pfv Helm Release
       run: |
-        helm upgrade --install default-theme-jetestencore2 --namespace site ./helm-chart \
+        helm upgrade --install default-${{ github.repository }} --namespace site ./helm-chart \
           --values ./helm-chart/values.yaml \
-          --set release_name=jetestencore2 \
-          --set image.repository=ghcr.io/sisent-it/theme-jetestencore2 \
-          --set image.tag=latest \
+          --set release_name=${{ github.repository }} \
+          --set image.repository=ghcr.io/sisent-it/${{ github.repository }}
           --set ingress.className=nginx \
-          --set ingress.hosts[0].host=theme-jetestencore2.myhappyweb.com \
+          --set ingress.hosts[0].host=theme-${{ github.repository }}.myhappyweb.com \
           --set ingress.hosts[0].paths[0]=/ \
-          --set ingress.tls[0].hosts[0]=theme-jetestencore2.myhappyweb.com \
+          --set ingress.tls[0].hosts[0]=theme-${{ github.repository }}.myhappyweb.com \
           --set ingress.tls[0].secretName=nginx-ingress-tls \
           --recreate-pods
       
