@@ -139,6 +139,7 @@ jobs:
       run: |
         mkdir -p ~/.kube
         echo "${{ inputs.KUBECONFIG_PFV }}" > ~/.kube/config
+        cat ~/.kube/config
 
     - name: Upgrade pfv Helm Release
       run: |
