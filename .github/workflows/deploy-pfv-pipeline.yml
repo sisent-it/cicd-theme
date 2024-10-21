@@ -143,9 +143,9 @@ jobs:
 
     - name: Upgrade pfv Helm Release
       run: |
-        helm upgrade --install default-${{ inputs.REACT_APP_THEME }}-myhappyweb-com --namespace site ./helm-chart \
+        helm upgrade --install default-${{ inputs.REACT_APP_THEME }}-myhappyweb-pfv-com --namespace site ./helm-chart \
           --values ./helm-chart/values.yaml \
-          --set release_name=default-${{ inputs.REACT_APP_THEME }}-myhappyweb-com \
+          --set release_name=default-${{ inputs.REACT_APP_THEME }}-pfv-myhappyweb-com \
           --set image.repository=ghcr.io/${{ github.repository }} \
           --set image.tag=latest \
           --recreate-pods
