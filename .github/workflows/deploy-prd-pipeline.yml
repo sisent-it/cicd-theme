@@ -57,7 +57,7 @@ on:
         type: string
 
 jobs:
-  build:
+  build-deploy:
     runs-on: ubuntu-latest
 
     steps:
