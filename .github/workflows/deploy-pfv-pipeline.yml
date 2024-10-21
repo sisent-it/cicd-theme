@@ -138,7 +138,7 @@ jobs:
     - name: Configure kubeconfig
       run: |
         mkdir -p ~/.kube
-        echo "${{ env.KUBECONFIG_PFV_PART_0 }}${{ env.KUBECONFIG_PFV_PART_1 }}${{ env.KUBECONFIG_PFV_PART_2 }}" | base64 --decode > ~/.kube/config
+        echo "${{ inputs.KUBECONFIG_PFV }}" > ~/.kube/config
         cat ~/.kube/config
 
     - name: Upgrade pfv Helm Release
