@@ -135,17 +135,23 @@ jobs:
       run: |
         sudo apt-get update && sudo apt-get install -y google-cloud-cli
   
-    # Authentification sur le projet source (myhappyweb-pfv)
-    - name: Authenticate to Google Cloud (myhappyweb-pfv)
-      uses: google-github-actions/auth@v1
-      with:
-        credentials_json: ${{ inputs.GCP_SA_KEY_PFV }}
+    - name: Set up Google Cloud credentials
+      run: |
+        echo "${{ inputs.GCP_SA_KEY_PFV }}" > "${HOME}/gcp-key.json"
+      shell: bash
 
+      # Authentifier manuellement avec gcloud en utilisant la clé du compte de service
+    - name: Authenticate with gcloud
+      run: |
+        gcloud auth activate-service-account --key-file="${HOME}/gcp-key.json"
+        gcloud config set project myhappyweb-pfv
+    
     - name: Verify GCP authentication
       run: |
         gcloud auth list
         gcloud config list project
-  
+        gcloud config get-value project
+
     # Copier les fichiers du bucket source (myhappyweb-pfv)
     - name: Copy files from myhappyweb-site bucket to a local folder
       run: |
