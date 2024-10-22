@@ -55,7 +55,15 @@ on:
         description: "Nom du tag GitHub pour versionner l'image"
         required: true
         type: string
-
+      GCP_SA_KEY_PFV:
+        description: "clé gcp key pfv"
+        required: true
+        type: string
+      GCP_SA_KEY_PRD:
+        description: "clé gcp key prd"
+        required: true
+        type: string
+            
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
@@ -126,31 +134,25 @@ jobs:
     - name: Install google-cloud-cli (includes gsutil)
       run: |
         sudo apt-get update && sudo apt-get install -y google-cloud-cli
-
-    - name: echo key pfv
-      run: |
-        echo ${{ vars.GCP_SA_KEY_PFV }}
-        echo "toto"
   
     # Authentification sur le projet source (myhappyweb-pfv)
     - name: Authenticate to Google Cloud (myhappyweb-pfv)
       uses: google-github-actions/auth@v1
       with:
-        credentials_json: ${{ vars.GCP_SA_KEY_PFV }}
+        credentials_json: ${{ inputs.GCP_SA_KEY_PFV }}
 
     # Copier les fichiers du bucket source (myhappyweb-pfv)
     - name: Copy files from myhappyweb-site bucket to a local folder
       run: |
-        echo ${{ vars.GCP_SA_KEY_PFV }}
-     #   gsutil -m cp -r gs://myhappyweb-site/* ./bucket-content/
+        gsutil -m cp -r gs://myhappyweb-pfv-theme/theme/${{ inputs.REACT_APP_THEME }}/* ./bucket-content/
 
     # Authentification sur le projet cible (myhappyweb-prd)
-   # - name: Authenticate to Google Cloud (myhappyweb-prd)
-   #   uses: google-github-actions/auth@v1
-   #   with:
-   #     credentials_json: ${{ secrets.GCP_SA_KEY_PRD }}
+    - name: Authenticate to Google Cloud (myhappyweb-prd)
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ inputs.GCP_SA_KEY_PRD }}
 
     # Copier les fichiers du dossier local vers le bucket cible (myhappyweb-prd)
-    #- name: Copy files to myhappyweb-int bucket
-    #  run: |
-    #    gsutil -m cp -r ./bucket-content/* gs://myhappyweb-int/
+    - name: Copy files to myhappyweb-int bucket
+      run: |
+        gsutil -m cp -r ./bucket-content/* gs://myhappyweb-prd-theme/theme/${{ inputs.REACT_APP_THEME }}/
