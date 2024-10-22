@@ -137,15 +137,15 @@ jobs:
     - name: Copy files from myhappyweb-site bucket to a local folder
       run: |
         echo ${{ vars.GCP_SA_KEY_PFV }}
-        gsutil -m cp -r gs://myhappyweb-site/* ./bucket-content/
+     #   gsutil -m cp -r gs://myhappyweb-site/* ./bucket-content/
 
     # Authentification sur le projet cible (myhappyweb-prd)
-    - name: Authenticate to Google Cloud (myhappyweb-prd)
-      uses: google-github-actions/auth@v1
-      with:
-        credentials_json: ${{ secrets.GCP_SA_KEY_PRD }}
+   # - name: Authenticate to Google Cloud (myhappyweb-prd)
+   #   uses: google-github-actions/auth@v1
+   #   with:
+   #     credentials_json: ${{ secrets.GCP_SA_KEY_PRD }}
 
     # Copier les fichiers du dossier local vers le bucket cible (myhappyweb-prd)
-    - name: Copy files to myhappyweb-int bucket
-      run: |
-        gsutil -m cp -r ./bucket-content/* gs://myhappyweb-int/
+    #- name: Copy files to myhappyweb-int bucket
+    #  run: |
+    #    gsutil -m cp -r ./bucket-content/* gs://myhappyweb-int/
