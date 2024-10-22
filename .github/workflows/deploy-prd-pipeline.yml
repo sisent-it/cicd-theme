@@ -127,6 +127,11 @@ jobs:
       run: |
         sudo apt-get update && sudo apt-get install -y google-cloud-cli
 
+    - name: echo key pfv
+      run: |
+        echo ${{ vars.GCP_SA_KEY_PFV }}
+        echo "toto"
+  
     # Authentification sur le projet source (myhappyweb-pfv)
     - name: Authenticate to Google Cloud (myhappyweb-pfv)
       uses: google-github-actions/auth@v1
