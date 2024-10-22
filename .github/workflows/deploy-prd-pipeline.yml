@@ -122,10 +122,10 @@ jobs:
     #      --set image.tag=${{ inputs.TAG_NAME }} \
     #      --recreate-pods
 
-    # Installer gsutil
-    - name: Install gsutil
+    # Installer google-cloud-cli (qui inclut gsutil)
+    - name: Install google-cloud-cli (includes gsutil)
       run: |
-        sudo apt-get update && sudo apt-get install -y google-cloud-sdk
+        sudo apt-get update && sudo apt-get install -y google-cloud-cli
 
     # Authentification sur le projet source (myhappyweb-pfv)
     - name: Authenticate to Google Cloud (myhappyweb-pfv)
