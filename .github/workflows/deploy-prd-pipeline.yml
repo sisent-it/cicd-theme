@@ -141,6 +141,11 @@ jobs:
       with:
         credentials_json: ${{ inputs.GCP_SA_KEY_PFV }}
 
+    - name: Verify GCP authentication
+      run: |
+        gcloud auth list
+        gcloud config list project
+  
     # Copier les fichiers du bucket source (myhappyweb-pfv)
     - name: Copy files from myhappyweb-site bucket to a local folder
       run: |
