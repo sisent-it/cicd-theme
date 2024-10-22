@@ -144,6 +144,7 @@ jobs:
     # Copier les fichiers du bucket source (myhappyweb-pfv)
     - name: Copy files from myhappyweb-site bucket to a local folder
       run: |
+        gsutil ls gs://myhappyweb-pfv-theme/ 
         gsutil -m cp -r gs://myhappyweb-pfv-theme/theme/${{ inputs.REACT_APP_THEME }}/* ./bucket-content/
 
     # Authentification sur le projet cible (myhappyweb-prd)
