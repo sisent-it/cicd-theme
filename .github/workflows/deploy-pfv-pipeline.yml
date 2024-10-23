@@ -51,7 +51,15 @@ on:
         description: "Kubeconfig prd for Helm"
         required: true
         type: string
-      
+      GCP_SA_KEY_PFV:
+        description: "clé gcp key pfv"
+        required: true
+        type: string
+      GCP_SA_KEY_PRD:
+        description: "clé gcp key prd"
+        required: true
+        type: string
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -86,12 +94,12 @@ jobs:
       run: npm run build
 
     # Test du Dockerfile pour vérifier la construction de l'image
-    - name: Build Docker image
-      run: |
-        docker build -t my-app:latest .
+    #- name: Build Docker image
+    #  run: |
+    #    docker build -t my-app:latest .
       # Vérifier si Docker est installé
-      env:
-        DOCKER_BUILDKIT: 1  # Utilise BuildKit pour des builds plus rapides et plus efficaces
+    #  env:
+    #    DOCKER_BUILDKIT: 1  # Utilise BuildKit pour des builds plus rapides et plus efficaces
 
   deploy_pfv:
     runs-on: ubuntu-latest
@@ -118,10 +126,10 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ inputs.TOKEN_GITHUB }}
 
-    - name: Build and push Docker image
-      run: |
-        docker buildx create --use
-        docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/${{ github.repository }}:latest --push .
+   # - name: Build and push Docker image
+   #   run: |
+   #     docker buildx create --use
+   #     docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/${{ github.repository }}:latest --push .
 
     - name: Checkout Helm Chart Repository
       uses: actions/checkout@v3
@@ -135,17 +143,46 @@ jobs:
       run: |
         curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
+    - name: Install jq
+      run: sudo apt-get install -y jq
+
+    - name: Install google-cloud-cli (includes gsutil)
+      run: |
+        sudo apt-get update && sudo apt-get install -y google-cloud-cli
+  
+    - name: Set up Google Cloud credentials (myhappyweb-pfv)
+      run: |
+        echo '${{ inputs.GCP_SA_KEY_PFV }}' | sed 's/\\n/\\n/g' | jq . > "${HOME}/gcp-key.json"
+
+    # Authentifier manuellement avec gcloud en utilisant la clé du compte de service
+    - name: Authenticate with gcloud (myhappyweb-pfv)
+      run: |
+        gcloud auth activate-service-account --key-file="${HOME}/gcp-key.json"
+        gcloud config set project myhappyweb-pfv
+    
+    # Copier les fichiers du bucket source (myhappyweb-pfv)
+    - name: Copy files from myhappyweb-pfv-site bucket to a local folder
+      run: |
+        mkdir -p ./bucket-content-site-pfv-${{ inputs.REACT_APP_THEME }}
+        gsutil -m cp -r gs://myhappyweb-pfv-site/pfv/${{ inputs.REACT_APP_THEME }}/default-${{ inputs.REACT_APP_THEME }}.myhappyweb-pfv.com/* ./bucket-content-site-pfv-${{ inputs.REACT_APP_THEME }}
+    
+    # Copier le repertoire dans le theme
+    - name: Copy files from local folder to bucket theme
+      run: |
+        mv ./bucket-content-site-pfv-${{ inputs.REACT_APP_THEME }}/pfv-${{ inputs.REACT_APP_THEME }}-default-${{ inputs.REACT_APP_THEME }}.myhappyweb-pfv.com.json  ./bucket-content-site-pfv-${{ inputs.REACT_APP_THEME }}/${{ inputs.REACT_APP_THEME }}-default.json
+        gsutil -m cp -r ./bucket-content-site-pfv-${{ inputs.REACT_APP_THEME }}/* gs://myhappyweb-pfv-theme/theme/${{ inputs.REACT_APP_THEME }}
+  
     - name: Configure kubeconfig
       run: |
         mkdir -p ~/.kube
         echo "${{ inputs.KUBECONFIG_PFV }}" > ~/.kube/config
         chmod 600 ~/.kube/config
 
-    - name: Upgrade pfv Helm Release
-      run: |
-        helm upgrade --install default-${{ inputs.REACT_APP_THEME }}-myhappyweb-pfv-com --namespace site ./helm-chart \
-          --values ./helm-chart/values.yaml \
-          --set release_name=default-${{ inputs.REACT_APP_THEME }}-myhappyweb-pfv-com \
-          --set image.repository=ghcr.io/${{ github.repository }} \
-          --set image.tag=latest \
-          --recreate-pods
+    #- name: Upgrade pfv Helm Release
+    #  run: |
+    #    helm upgrade --install default-${{ inputs.REACT_APP_THEME }}-myhappyweb-pfv-com --namespace site ./helm-chart \
+    #      --values ./helm-chart/values.yaml \
+    #      --set release_name=default-${{ inputs.REACT_APP_THEME }}-myhappyweb-pfv-com \
+    #      --set image.repository=ghcr.io/${{ github.repository }} \
+    #      --set image.tag=latest \
+    #      --recreate-pods
