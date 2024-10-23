@@ -79,6 +79,9 @@ jobs:
         fi
       shell: bash
 
+    - name: token github
+      run: git config --global url."${{ inputs.TOKEN_GITHUB }}@github.com/".insteadOf "https://github.com/"
+
     - name: Install dependencies
       run: npm install
 
