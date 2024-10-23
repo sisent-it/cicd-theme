@@ -140,9 +140,8 @@ jobs:
   
     - name: Set up Google Cloud credentials
       run: |
-        echo "${{ inputs.GCP_SA_KEY_PFV }}" | jq . > "${HOME}/gcp-key.json"
-      shell: bash
-      
+        echo "${{ inputs.GCP_SA_KEY_PFV }}" | sed 's/\\n/\\n/g' | jq . > "${HOME}/gcp-key.json"
+            
       # Authentifier manuellement avec gcloud en utilisant la clé du compte de service
     - name: Authenticate with gcloud
       run: |
