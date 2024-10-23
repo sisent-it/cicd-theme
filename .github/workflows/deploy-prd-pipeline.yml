@@ -151,7 +151,8 @@ jobs:
     # Copier les fichiers du bucket source (myhappyweb-pfv)
     - name: Copy files from myhappyweb-site bucket to a local folder
       run: |
-        gsutil -m cp -r gs://myhappyweb-pfv-theme/theme/${{ inputs.REACT_APP_THEME }}/* ./bucket-content/
+        mkdir -p ./bucket-content-pfv-${{ inputs.REACT_APP_THEME }}
+        gsutil -m cp -r gs://myhappyweb-pfv-theme/theme/${{ inputs.REACT_APP_THEME }}/* ./bucket-content-pfv-${{ inputs.REACT_APP_THEME }}
 
     - name: Set up Google Cloud credentials (myhappyweb-prd)
       run: |
@@ -166,4 +167,4 @@ jobs:
     # Copier les fichiers du dossier local vers le bucket cible (myhappyweb-prd)
     - name: Copy files to bucket(myhappyweb-prd)
       run: |
-        gsutil -m cp -r ./bucket-content/* gs://myhappyweb-prd-theme/theme/${{ inputs.REACT_APP_THEME }}/
+        gsutil -m cp -r ./bucket-content-pfv-${{ inputs.REACT_APP_THEME }}/* gs://myhappyweb-prd-theme/theme/${{ inputs.REACT_APP_THEME }}/
