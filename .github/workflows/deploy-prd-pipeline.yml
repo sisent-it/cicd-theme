@@ -93,12 +93,12 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ inputs.TOKEN_GITHUB }}
 
-    #- name: Build and push Docker image with Tag
-    #  run: |
-    #    docker buildx create --use
-    #    docker buildx build --platform linux/amd64,linux/arm64 \
-    #      -t ghcr.io/${{ github.repository }}:${{ inputs.TAG_NAME }} \
-    #      --push .
+    - name: Build and push Docker image with Tag
+      run: |
+        docker buildx create --use
+        docker buildx build --platform linux/amd64,linux/arm64 \
+          -t ghcr.io/${{ github.repository }}:${{ inputs.TAG_NAME }} \
+          --push .
 
     - name: Checkout Helm Chart Repository
       uses: actions/checkout@v3
@@ -121,17 +121,17 @@ jobs:
         echo "${{ inputs.KUBECONFIG_PRD }}" > ~/.kube/config
         chmod 600 ~/.kube/config
 
-    #- name: Extract Tag
-    #  run: echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+    - name: Extract Tag
+      run: echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
-    #- name: Upgrade pfv Helm Release
-    #  run: |
-    #    helm upgrade --install default-${{ inputs.REACT_APP_THEME }}-myhappyweb-com --namespace site ./helm-chart \
-    #      --values ./helm-chart/values.yaml \
-    #      --set release_name=default-${{ inputs.REACT_APP_THEME }}-myhappyweb-com \
-    #      --set image.repository=ghcr.io/${{ github.repository }} \
-    #      --set image.tag=${{ inputs.TAG_NAME }} \
-    #      --recreate-pods
+    - name: Upgrade pfv Helm Release
+      run: |
+        helm upgrade --install default-${{ inputs.REACT_APP_THEME }}-myhappyweb-com --namespace site ./helm-chart \
+          --values ./helm-chart/values.yaml \
+          --set release_name=default-${{ inputs.REACT_APP_THEME }}-myhappyweb-com \
+          --set image.repository=ghcr.io/${{ github.repository }} \
+          --set image.tag=${{ inputs.TAG_NAME }} \
+          --recreate-pods
 
     # Installer google-cloud-cli (qui inclut gsutil)
     - name: Install google-cloud-cli (includes gsutil)

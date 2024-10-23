@@ -94,12 +94,12 @@ jobs:
       run: npm run build
 
     # Test du Dockerfile pour vérifier la construction de l'image
-    #- name: Build Docker image
-    #  run: |
-    #    docker build -t my-app:latest .
+    - name: Build Docker image
+      run: |
+        docker build -t my-app:latest .
       # Vérifier si Docker est installé
-    #  env:
-    #    DOCKER_BUILDKIT: 1  # Utilise BuildKit pour des builds plus rapides et plus efficaces
+      env:
+        DOCKER_BUILDKIT: 1  # Utilise BuildKit pour des builds plus rapides et plus efficaces
 
   deploy_pfv:
     runs-on: ubuntu-latest
@@ -126,10 +126,10 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ inputs.TOKEN_GITHUB }}
 
-   # - name: Build and push Docker image
-   #   run: |
-   #     docker buildx create --use
-   #     docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/${{ github.repository }}:latest --push .
+    - name: Build and push Docker image
+      run: |
+        docker buildx create --use
+        docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/${{ github.repository }}:latest --push .
 
     - name: Checkout Helm Chart Repository
       uses: actions/checkout@v3
@@ -178,11 +178,11 @@ jobs:
         echo "${{ inputs.KUBECONFIG_PFV }}" > ~/.kube/config
         chmod 600 ~/.kube/config
 
-    #- name: Upgrade pfv Helm Release
-    #  run: |
-    #    helm upgrade --install default-${{ inputs.REACT_APP_THEME }}-myhappyweb-pfv-com --namespace site ./helm-chart \
-    #      --values ./helm-chart/values.yaml \
-    #      --set release_name=default-${{ inputs.REACT_APP_THEME }}-myhappyweb-pfv-com \
-    #      --set image.repository=ghcr.io/${{ github.repository }} \
-    #      --set image.tag=latest \
-    #      --recreate-pods
+    - name: Upgrade pfv Helm Release
+      run: |
+        helm upgrade --install default-${{ inputs.REACT_APP_THEME }}-myhappyweb-pfv-com --namespace site ./helm-chart \
+          --values ./helm-chart/values.yaml \
+          --set release_name=default-${{ inputs.REACT_APP_THEME }}-myhappyweb-pfv-com \
+          --set image.repository=ghcr.io/${{ github.repository }} \
+          --set image.tag=latest \
+          --recreate-pods
