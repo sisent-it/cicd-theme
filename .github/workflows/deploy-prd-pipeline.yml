@@ -138,34 +138,32 @@ jobs:
       run: |
         sudo apt-get update && sudo apt-get install -y google-cloud-cli
   
-    - name: Set up Google Cloud credentials
+    - name: Set up Google Cloud credentials (myhappyweb-pfv)
       run: |
         echo '${{ inputs.GCP_SA_KEY_PFV }}' | sed 's/\\n/\\n/g' | jq . > "${HOME}/gcp-key.json"
             
       # Authentifier manuellement avec gcloud en utilisant la clé du compte de service
-    - name: Authenticate with gcloud
+    - name: Authenticate with gcloud (myhappyweb-pfv)
       run: |
         gcloud auth activate-service-account --key-file="${HOME}/gcp-key.json"
         gcloud config set project myhappyweb-pfv
     
-    - name: Verify GCP authentication
-      run: |
-        gcloud auth list
-        gcloud config list project
-        gcloud config get-value project
-
     # Copier les fichiers du bucket source (myhappyweb-pfv)
     - name: Copy files from myhappyweb-site bucket to a local folder
       run: |
         gsutil ls gs://myhappyweb-pfv-theme/ 
-       # gsutil -m cp -r gs://myhappyweb-pfv-theme/theme/${{ inputs.REACT_APP_THEME }}/* ./bucket-content/
+        gsutil -m cp -r gs://myhappyweb-pfv-theme/theme/${{ inputs.REACT_APP_THEME }}/* ./bucket-content/
 
-    # Authentification sur le projet cible (myhappyweb-prd)
-    - name: Authenticate to Google Cloud (myhappyweb-prd)
-      uses: google-github-actions/auth@v1
-      with:
-        credentials_json: ${{ inputs.GCP_SA_KEY_PRD }}
-
+    - name: Set up Google Cloud credentials (myhappyweb-prd)
+      run: |
+        echo '${{ inputs.GCP_SA_KEY_PRD }}' | sed 's/\\n/\\n/g' | jq . > "${HOME}/gcp-key.json"
+          
+    # Authentifier manuellement avec gcloud en utilisant la clé du compte de service
+    - name: Authenticate with gcloud (myhappyweb-prd)
+      run: |
+        gcloud auth activate-service-account --key-file="${HOME}/gcp-key.json"
+        gcloud config set project myhappyweb-pfv
+    
     # Copier les fichiers du dossier local vers le bucket cible (myhappyweb-prd)
     - name: Copy files to myhappyweb-int bucket
       run: |
