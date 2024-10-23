@@ -165,6 +165,11 @@ jobs:
         gcloud config set project myhappyweb-pfv
     
     # Copier les fichiers du dossier local vers le bucket cible (myhappyweb-prd)
-    - name: Copy files to bucket(myhappyweb-prd)
+    - name: Copy files to bucket(myhappyweb-prd) dir theme
       run: |
         gsutil -m cp -r ./bucket-content-pfv-${{ inputs.REACT_APP_THEME }}/* gs://myhappyweb-prd-theme/theme/${{ inputs.REACT_APP_THEME }}/
+
+    # Copier les fichiers du dossier le bucket (myhappyweb-prd) dir theme vers site
+    - name: Copy files bucket(myhappyweb-prd) dir theme to site
+      run: |
+        gsutil -m cp -r gs://myhappyweb-prd-theme/theme/${{ inputs.REACT_APP_THEME }}/* gs://myhappyweb-prd-site/prd/${{ inputs.REACT_APP_THEME }}/default-${{ inputs.REACT_APP_THEME }}.myhappyweb.com/
