@@ -97,20 +97,44 @@ jobs:
         DOCKER_BUILDKIT=1 docker build -t my-app:latest .
       # Cette étape crée une image Docker de l'application en copiant simplement les dépendances et les fichiers déjà construits.
 
-  # Job de déploiement pour l'environnement PFV
   deploy_pfv:
     runs-on: ubuntu-latest
     needs: build
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
-
-    # Récupérer le dépôt du projet avec SSH
-    - name: Checkout repository using SSH
+    # Récupérer le dépôt du projet
+    - name: Checkout repository
       uses: actions/checkout@v3
+
+    # Configurer l'agent SSH pour utiliser la clé privée
+    - name: Setup SSH agent
+      uses: webfactory/ssh-agent@v0.5.3
       with:
-        ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-      # Cette étape clone le dépôt via SSH en utilisant la clé privée.
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      # Cette étape configure un agent SSH et ajoute la clé privée pour les connexions SSH.
+
+    # Désactiver la vérification stricte des clés hôtes pour SSH
+    - name: Disable host key checking
+      run: |
+        echo "StrictHostKeyChecking no" >> ~/.ssh/config
+      # Cela désactive la vérification stricte des clés hôtes pour éviter des erreurs lors de la connexion SSH.
+
+    # Configurer git pour utiliser SSH pour GitHub packages
+    - name: Configure git to use SSH for GitHub packages
+      run: |
+        git config --global url."git@github.com:".insteadOf "https://github.com/"
+      # Cette étape force git à utiliser SSH pour tous les dépôts GitHub.
+
+    # Installation des dépendances avec npm
+    - name: Install dependencies
+      run: npm install
+      # Installation des dépendances du projet avec npm.
+
+    # Lancer le processus de build pour React
+    - name: Build React app
+      run: npm run build
+      # Cette étape construit l'application React pour la production.
 
     # Créer le fichier .env avec les variables nécessaires pour l'environnement PFV
     - name: Create .env file
@@ -121,7 +145,7 @@ jobs:
         echo "REACT_APP_THEME=${{ inputs.REACT_APP_THEME }}" >> .env
         echo "REACT_APP_ENV=pfv" >> .env
         echo "REACT_APP_FRONT_AUTHENTIFICATION=${{ inputs.REACT_APP_FRONT_AUTHENTIFICATION_PFV }}" >> .env
-      # Cette étape génère un fichier .env avec les variables nécessaires pour l'environnement PFV.
+      # Génération du fichier .env pour l'environnement PFV.
 
     # Connexion au registre des conteneurs GitHub
     - name: Log in to GitHub Container Registry
@@ -132,12 +156,15 @@ jobs:
         password: ${{ secrets.TOKEN_GITHUB }}
       # Connexion au registre GitHub pour le push des images Docker.
 
-    # Construction et push de l'image Docker vers GitHub Container Registry
+    # Construction et push de l'image Docker vers GitHub Container Registry en incluant le fichier .env
     - name: Build and push Docker image
       run: |
-        docker buildx create --use
-        docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/${{ github.repository }}:latest --push .
-      # Construction et push de l'image Docker multi-plateforme vers le registre GitHub.
+        DOCKER_BUILDKIT=1 docker buildx create --use
+        DOCKER_BUILDKIT=1 docker buildx build --platform linux/amd64,linux/arm64 \
+          -t ghcr.io/${{ github.repository }}:latest \
+          --build-arg ENV_FILE=.env \
+          --push .
+      # Cette étape construit et pousse l'image Docker vers le registre en utilisant BuildKit et en incluant le fichier `.env`.
 
     # Récupérer le dépôt Helm Chart via SSH
     - name: Checkout Helm Chart Repository using SSH
