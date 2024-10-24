@@ -64,7 +64,7 @@ jobs:
 
     # Configurer l'agent SSH pour utiliser la clé privée
     - name: Setup SSH agent
-      uses: webfactory/ssh-agent@v0.10.4
+      uses: webfactory/ssh-agent@v0.5.3
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       # Cette étape configure un agent SSH et ajoute la clé privée pour les connexions SSH.
