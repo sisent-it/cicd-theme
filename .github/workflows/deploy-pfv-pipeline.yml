@@ -62,38 +62,44 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    # Configurer l'agent SSH
+    # Configurer l'agent SSH pour utiliser la clé privée
     - name: Setup SSH agent
       uses: webfactory/ssh-agent@v0.10.4
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      # Cette étape configure un agent SSH et ajoute la clé privée pour les connexions SSH.
 
     # Configurer Node.js
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '21.7.3'
-  
-    # Configurer npm pour utiliser les URL SSH pour les paquets privés
+      # Cette étape installe la version spécifique de Node.js nécessaire à l'application.
+
+    # Configurer npm pour utiliser SSH pour les paquets privés
     - name: Configure npm to use SSH for GitHub packages
       run: |
         echo "Using SSH for npm dependencies"
         git config --global url."git@github.com:".insteadOf "https://github.com/"
+      # Cette étape modifie la configuration Git pour que npm utilise SSH au lieu de HTTPS.
 
     # Installation des dépendances avec npm
     - name: Install dependencies
       run: npm install
+      # Installation des dépendances du projet avec npm.
 
     # Lancer le processus de build
     - name: Run build
       run: npm run build
+      # Construction du projet front-end.
 
     # Construction de l'image Docker pour l'application
     - name: Build Docker image
       run: |
         docker build -t my-app:latest .
       env:
-        DOCKER_BUILDKIT: 1  # Utilise BuildKit pour des builds plus rapides et plus efficaces
+        DOCKER_BUILDKIT: 1  # Utilise BuildKit pour des builds plus rapides et plus efficaces.
+      # Cette étape crée une image Docker de l'application.
 
   # Job de déploiement pour l'environnement PFV
   deploy_pfv:
@@ -106,6 +112,7 @@ jobs:
     # Récupérer le dépôt du projet avec SSH
     - name: Checkout repository using SSH
       uses: actions/checkout@v3
+      # Cette étape clone le dépôt via SSH.
 
     # Créer le fichier .env avec les variables nécessaires pour l'environnement PFV
     - name: Create .env file
@@ -116,6 +123,7 @@ jobs:
         echo "REACT_APP_THEME=${{ inputs.REACT_APP_THEME }}" >> .env
         echo "REACT_APP_ENV=pfv" >> .env
         echo "REACT_APP_FRONT_AUTHENTIFICATION=${{ inputs.REACT_APP_FRONT_AUTHENTIFICATION_PFV }}" >> .env
+      # Cette étape génère un fichier .env avec les variables nécessaires pour l'environnement PFV.
 
     # Connexion au registre des conteneurs GitHub
     - name: Log in to GitHub Container Registry
@@ -124,65 +132,76 @@ jobs:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.TOKEN_GITHUB }}
+      # Connexion au registre GitHub pour le push des images Docker.
 
     # Construction et push de l'image Docker vers GitHub Container Registry
     - name: Build and push Docker image
       run: |
         docker buildx create --use
         docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/${{ github.repository }}:latest --push .
+      # Construction et push de l'image Docker multi-plateforme vers le registre GitHub.
 
-    # Récupérer le dépôt Helm Chart
+    # Récupérer le dépôt Helm Chart via SSH
     - name: Checkout Helm Chart Repository using SSH
       uses: actions/checkout@v3
       with:
-        ssh-key: ${{ inputs.SSH_TEST }}
+        ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
         repository: sisent-it/helm-theme
         path: helm-chart
         ref: main
+      # Cette étape clone le dépôt Helm Chart en utilisant SSH.
 
     # Installer Helm
     - name: Install Helm
       run: |
         curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      # Télécharge et installe l'outil Helm pour gérer les releases Kubernetes.
 
     # Installer jq
     - name: Install jq
       run: sudo apt-get install -y jq
+      # Installe l'outil jq pour manipuler des fichiers JSON.
 
     # Installer Google Cloud CLI
     - name: Install google-cloud-cli (includes gsutil)
       run: |
         sudo apt-get update && sudo apt-get install -y google-cloud-cli
-  
+      # Installe Google Cloud CLI pour interagir avec Google Cloud Storage et Kubernetes.
+
     # Configuration des identifiants Google Cloud pour le projet PFV
     - name: Set up Google Cloud credentials (myhappyweb-pfv)
       run: |
         echo '${{ secrets.GCP_SA_KEY_PFV }}' | sed 's/\\n/\\n/g' | jq . > "${HOME}/gcp-key.json"
+      # Crée un fichier de clé pour authentifier les services Google Cloud.
 
     # Authentification manuelle avec gcloud en utilisant la clé du compte de service
     - name: Authenticate with gcloud (myhappyweb-pfv)
       run: |
         gcloud auth activate-service-account --key-file="${HOME}/gcp-key.json"
         gcloud config set project myhappyweb-pfv
-    
+      # Authentifie l'accès à Google Cloud en utilisant le fichier de clé de compte de service.
+
     # Copier les fichiers du bucket source Google Cloud vers un dossier local
     - name: Copy files from myhappyweb-pfv-site bucket to a local folder
       run: |
         mkdir -p ./bucket-content-site-pfv-${{ inputs.REACT_APP_THEME }}
         gsutil -m cp -r gs://myhappyweb-pfv-site/pfv/${{ inputs.REACT_APP_THEME }}/default-${{ inputs.REACT_APP_THEME }}.myhappyweb-pfv.com/* ./bucket-content-site-pfv-${{ inputs.REACT_APP_THEME }}
-    
+      # Copie des fichiers du bucket Google Cloud vers un répertoire local.
+
     # Copier le répertoire local vers le bucket de thème
     - name: Copy files from local folder to bucket theme
       run: |
         mv ./bucket-content-site-pfv-${{ inputs.REACT_APP_THEME }}/pfv-${{ inputs.REACT_APP_THEME }}-default-${{ inputs.REACT_APP_THEME }}.myhappyweb-pfv.com.json  ./bucket-content-site-pfv-${{ inputs.REACT_APP_THEME }}/${{ inputs.REACT_APP_THEME }}-default.json
         gsutil -m cp -r ./bucket-content-site-pfv-${{ inputs.REACT_APP_THEME }}/* gs://myhappyweb-pfv-theme/theme/${{ inputs.REACT_APP_THEME }}
-  
+      # Transfère les fichiers modifiés vers le bucket de thème Google Cloud.
+
     # Configurer le kubeconfig pour Kubernetes
     - name: Configure kubeconfig
       run: |
         mkdir -p ~/.kube
         echo "${{ secrets.KUBECONFIG_PFV }}" > ~/.kube/config
         chmod 600 ~/.kube/config
+      # Configure le fichier kubeconfig pour accéder à Kubernetes et lui applique des permissions restreintes.
 
     # Mettre à jour le release Helm pour Kubernetes
     - name: Upgrade pfv Helm Release
@@ -193,3 +212,4 @@ jobs:
           --set image.repository=ghcr.io/${{ github.repository }} \
           --set image.tag=latest \
           --recreate-pods
+      # Met à jour ou installe un Helm release pour déployer l'application sur Kubernetes avec la nouvelle image Docker.
