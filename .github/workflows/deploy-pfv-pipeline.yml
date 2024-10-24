@@ -69,12 +69,6 @@ jobs:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       # Cette étape configure un agent SSH et ajoute la clé privée pour les connexions SSH.
 
-    # Vérifier l'accès SSH à GitHub
-    - name: Verify SSH access to GitHub
-      run: |
-        ssh -T git@github.com
-      # Cette étape vérifie que la clé SSH permet bien de se connecter à GitHub.
-
     # Désactiver la vérification stricte des clés hôtes pour SSH
     - name: Disable host key checking
       run: |
