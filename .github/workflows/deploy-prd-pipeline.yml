@@ -62,13 +62,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    # Récupérer le dépôt du projet
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
+    # Configurer l'agent SSH pour utiliser la clé privée
+    - name: Setup SSH agent
+      uses: webfactory/ssh-agent@v0.5.3
       with:
-        node-version: '21.7.3'
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      # Cette étape configure un agent SSH et ajoute la clé privée pour les connexions SSH.
+
+    # Désactiver la vérification stricte des clés hôtes pour SSH
+    - name: Disable host key checking
+      run: |
+        echo "StrictHostKeyChecking no" >> ~/.ssh/config
+      # Cela désactive la vérification stricte des clés hôtes pour éviter des erreurs lors de la connexion SSH.
+
+    # Configurer git pour utiliser SSH pour GitHub packages
+    - name: Configure git to use SSH for GitHub packages
+      run: |
+        git config --global url."git@github.com:".insteadOf "https://github.com/"
+      # Cette étape force git à utiliser SSH pour tous les dépôts GitHub.
+
+    # Installation des dépendances avec npm
+    - name: Install dependencies
+      run: npm install
+      # Installation des dépendances du projet avec npm.
+
+    # Lancer le processus de build pour React
+    - name: Build React app
+      run: npm run build
+      # Cette étape construit l'application React pour la production.
 
     - name: Create .env file
       run: |
@@ -79,30 +104,32 @@ jobs:
         echo "REACT_APP_ENV=pfv" >> .env
         echo "REACT_APP_FRONT_AUTHENTIFICATION=${{ inputs.REACT_APP_FRONT_AUTHENTIFICATION_PRD }}" >> .env
 
-    - name: token github
-      run: git config --global url."https://${{ secrets.TOKEN_GITHUB }}@github.com/".insteadOf "https://github.com/"
-
     - name: Log in to GitHub Container Registry
       uses: docker/login-action@v3
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
-        password: ${{ inputs.TOKEN_GITHUB }}
+        password: ${{ secrets.TOKEN_GITHUB }}
+
+    # Cette étape construit et pousse l'image Docker vers le registre en utilisant BuildKit et en incluant le fichier `.env`.
 
     - name: Build and push Docker image with Tag
       run: |
-        docker buildx create --use
-        docker buildx build --platform linux/amd64,linux/arm64 \
+          DOCKER_BUILDKIT=1 docker buildx create --use
+          DOCKER_BUILDKIT=1 docker buildx build --platform linux/amd64,linux/arm64 \
           -t ghcr.io/${{ github.repository }}:${{ inputs.TAG_NAME }} \
+          --build-arg ENV_FILE=.env \
           --push .
-
-    - name: Checkout Helm Chart Repository
+  
+    # Récupérer le dépôt Helm Chart via SSH
+    - name: Checkout Helm Chart Repository using SSH
       uses: actions/checkout@v3
       with:
+        ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
         repository: sisent-it/helm-theme
         path: helm-chart
-        ref: main 
-        token: ${{ inputs.TOKEN_GITHUB }}
+        ref: main
+      # Cette étape clone le dépôt Helm Chart en utilisant SSH.
 
     - name: Install Helm
       run: |
