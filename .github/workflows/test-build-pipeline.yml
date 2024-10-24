@@ -39,22 +39,20 @@ on:
         description: "URL de l'authentification front PRD"
         required: true
         type: string
+    secrets:
       TOKEN_GITHUB:
-        description: "GitHub Token for repository access"
         required: true
-        type: string
-      KUBECONFIG_PFV:
-        description: "Kubeconfig pfv for Helm"
+      SSH_PRIVATE_KEY:
         required: true
-        type: string
       KUBECONFIG_PRD:
-        description: "Kubeconfig prd for Helm"
         required: true
-        type: string
-      SSH_TEST: 
-        description: "clé gcp key prd"
+      KUBECONFIG_PFV:
         required: true
-        type: string
+      GCP_SA_KEY_PRD:
+        required: true
+      GCP_SA_KEY_PFV:
+        required: true
+
   
 jobs:
   build:
@@ -69,22 +67,8 @@ jobs:
       with:
         node-version: '21.7.3'
 
-    # Vérifier si les variables d'entrée ne sont pas vides
-    - name: Check input variables
-      run: |
-        if [ -z "${{ inputs.REACT_APP_API_AUTH_URL_PFV }}" ] || [ -z "${{ inputs.REACT_APP_API_AUTH_URL_PRD }}" ] || \
-           [ -z "${{ inputs.REACT_APP_API_COMPONENT_URL_PFV }}" ] || [ -z "${{ inputs.REACT_APP_API_COMPONENT_URL_PRD }}" ] || \
-           [ -z "${{ inputs.REACT_APP_URL }}" ] || [ -z "${{ inputs.REACT_APP_THEME }}" ] || \
-           [ -z "${{ inputs.REACT_APP_ENV }}" ] || [ -z "${{ inputs.REACT_APP_FRONT_AUTHENTIFICATION_PFV }}" ] || \
-           [ -z "${{ inputs.REACT_APP_FRONT_AUTHENTIFICATION_PRD }}" ] || [ -z "${{ inputs.TOKEN_GITHUB }}" ] || \
-           [ -z "${{ inputs.KUBECONFIG_PFV }}" ] || [ -z "${{ inputs.KUBECONFIG_PRD }}" ]; then
-          echo "Error: One or more required input variables are missing."
-          exit 1
-        fi
-      shell: bash
-
     - name: token github
-      run: git config --global url."https://${{ inputs.TOKEN_GITHUB }}@github.com/".insteadOf "ssh://git@github.com/"
+      run: git config --global url."https://${{ secrets.TOKEN_GITHUB }}@github.com/".insteadOf "ssh://git@github.com/"
 
     - name: Install dependencies
       run: npm install
