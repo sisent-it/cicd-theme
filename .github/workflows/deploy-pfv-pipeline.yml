@@ -63,7 +63,10 @@ on:
         description: "clé gcp key prd"
         required: true
         type: string
-      
+    secrets:
+      ORG_TOKEN_GITHUB:
+        required: true
+  
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -80,7 +83,7 @@ jobs:
         node-version: '21.7.3'
 
     - name: Check input variables
-      run: echo ${{ secrets.ORG_TOKEN_GITHUB }}
+      run: echo "${{ secrets.ORG_TOKEN_GITHUB }}"
   
     # Vérifier si toutes les variables d'entrée sont définies
     - name: Check input variables
