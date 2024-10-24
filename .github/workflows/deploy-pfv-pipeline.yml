@@ -62,6 +62,12 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
+    # Configurer l'agent SSH
+    - name: Setup SSH agent
+      uses: webfactory/ssh-agent@v0.10.4
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
     # Configurer Node.js
     - name: Set up Node.js
       uses: actions/setup-node@v3
