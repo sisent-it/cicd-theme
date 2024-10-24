@@ -69,19 +69,23 @@ jobs:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       # Cette étape configure un agent SSH et ajoute la clé privée pour les connexions SSH.
 
-    # Configurer Node.js
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '21.7.3'
-      # Cette étape installe la version spécifique de Node.js nécessaire à l'application.
-
-    # Configurer npm pour utiliser SSH pour les paquets privés
-    - name: Configure npm to use SSH for GitHub packages
+    # Vérifier l'accès SSH à GitHub
+    - name: Verify SSH access to GitHub
       run: |
-        echo "Using SSH for npm dependencies"
+        ssh -T git@github.com
+      # Cette étape vérifie que la clé SSH permet bien de se connecter à GitHub.
+
+    # Désactiver la vérification stricte des clés hôtes pour SSH
+    - name: Disable host key checking
+      run: |
+        echo "StrictHostKeyChecking no" >> ~/.ssh/config
+      # Cela désactive la vérification stricte des clés hôtes pour éviter des erreurs lors de la connexion SSH.
+
+    # Configurer git pour utiliser SSH pour GitHub
+    - name: Configure git to use SSH for GitHub packages
+      run: |
         git config --global url."git@github.com:".insteadOf "https://github.com/"
-      # Cette étape modifie la configuration Git pour que npm utilise SSH au lieu de HTTPS.
+      # Cette étape force git à utiliser SSH pour tous les dépôts GitHub.
 
     # Installation des dépendances avec npm
     - name: Install dependencies
