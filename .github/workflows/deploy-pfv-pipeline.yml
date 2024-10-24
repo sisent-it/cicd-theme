@@ -59,15 +59,27 @@ on:
         description: "clé gcp key prd"
         required: true
         type: string
-
+      SSH_TEST: 
+        description: "clé gcp key prd"
+        required: true
+        type: string
+      
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    # Récupérer le dépôt du projet
-    - name: Checkout repository
+    # Ajouter une clé SSH (en supposant que la clé SSH privée est stockée dans un secret GitHub)
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.8.1
+      with:
+        ssh-private-key: ${{ inputs.SSH_TEST }}
+
+    # Récupérer le dépôt du projet avec SSH
+    - name: Checkout repository using SSH
       uses: actions/checkout@v3
+      with:
+        ssh-key: ${{ inputs.SSH_TEST }}
 
     # Configurer Node.js
     - name: Set up Node.js
@@ -89,15 +101,11 @@ jobs:
         fi
       shell: bash
 
-    # Configurer Git pour utiliser HTTPS et pas SSH
-    - name: Force Git to use HTTPS instead of SSH
+    # Configurer npm pour utiliser les URL SSH pour les paquets privés
+    - name: Configure npm to use SSH for GitHub packages
       run: |
-        git config --global --unset url."ssh://git@github.com/".insteadOf
-
-    # Configurer npm pour utiliser le token GitHub
-    - name: Set up npm to use GitHub token
-      run: |
-        echo "//npm.pkg.github.com/:_authToken=${{ inputs.TOKEN_GITHUB }}" > ~/.npmrc
+        echo "Using SSH for npm dependencies"
+        git config --global url."git@github.com:".insteadOf "https://github.com/"
 
     # Installation des dépendances avec npm
     - name: Install dependencies
@@ -121,9 +129,17 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
-    # Vérifier le dépôt du projet
-    - name: Checkout repository
+    # Ajouter la clé SSH pour le déploiement
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.8.1
+      with:
+        ssh-private-key: ${{ inputs.SSH_TEST }}
+
+    # Récupérer le dépôt du projet avec SSH
+    - name: Checkout repository using SSH
       uses: actions/checkout@v3
+      with:
+        ssh-key: ${{ inputs.SSH_TEST }}
 
     # Créer le fichier .env avec les variables nécessaires pour l'environnement PFV
     - name: Create .env file
@@ -150,13 +166,13 @@ jobs:
         docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/${{ github.repository }}:latest --push .
 
     # Récupérer le dépôt Helm Chart
-    - name: Checkout Helm Chart Repository
+    - name: Checkout Helm Chart Repository using SSH
       uses: actions/checkout@v3
       with:
+        ssh-key: ${{ inputs.SSH_PRIVATE_KEY }}
         repository: sisent-it/helm-theme
         path: helm-chart
-        ref: main 
-        token: ${{ inputs.TOKEN_GITHUB }}
+        ref: main
 
     # Installer Helm
     - name: Install Helm
