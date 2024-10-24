@@ -59,7 +59,7 @@ on:
         description: "clé gcp key prd"
         required: true
         type: string
-      SSH_PRIVATE_KEY : 
+      SSH_TEST : 
         description: "clé gcp key prd"
         required: true
         type: string
@@ -148,13 +148,13 @@ jobs:
     - name: Set up SSH
       uses: webfactory/ssh-agent@v0.8.1
       with:
-        ssh-private-key: ${{ inputs.SSH_PRIVATE_KEY  }}
+        ssh-private-key: ${{ inputs.SSH_TEST  }}
 
     # Récupérer le dépôt du projet avec SSH
     - name: Checkout repository using SSH
       uses: actions/checkout@v3
       with:
-        ssh-key: ${{ inputs.SSH_PRIVATE_KEY  }}
+        ssh-key: ${{ inputs.SSH_TEST  }}
 
     # Créer le fichier .env avec les variables nécessaires pour l'environnement PFV
     - name: Create .env file
@@ -184,7 +184,7 @@ jobs:
     - name: Checkout Helm Chart Repository using SSH
       uses: actions/checkout@v3
       with:
-        ssh-key: ${{ inputs.SSH_PRIVATE_KEY }}
+        ssh-key: ${{ inputs.SSH_TEST }}
         repository: sisent-it/helm-theme
         path: helm-chart
         ref: main
