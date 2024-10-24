@@ -63,7 +63,11 @@ on:
         description: "clé gcp key prd"
         required: true
         type: string
-            
+      SSH_TEST: 
+        description: "clé gcp key prd"
+        required: true
+        type: string
+    
 jobs:
   build-deploy:
     runs-on: ubuntu-latest

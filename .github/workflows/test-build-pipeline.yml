@@ -51,6 +51,10 @@ on:
         description: "Kubeconfig prd for Helm"
         required: true
         type: string
+      SSH_TEST: 
+        description: "clé gcp key prd"
+        required: true
+        type: string
   
 jobs:
   build:
