@@ -64,9 +64,19 @@ on:
         required: true
         type: string
     secrets:
-      ORG_TOKEN_GITHUB:
+      TOKEN_GITHUB:
         required: true
-  
+      SSH_PRIVATE_KEY:
+        required: true
+      KUBECONFIG_PRD:
+        required: true
+      KUBECONFIG_PFV:
+        required: true
+      GCP_SA_KEY_PRD:
+        required: true
+      GCP_SA_KEY_PFV:
+        required: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -81,44 +91,7 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: '21.7.3'
-
-    - name: Check input variables
-      run: echo "${{ secrets.ORG_TOKEN_GITHUB }}"
   
-    # Vérifier si toutes les variables d'entrée sont définies
-    - name: Check input variables
-      run: |
-        if [ -z "${{ inputs.REACT_APP_API_AUTH_URL_PFV }}" ] || [ -z "${{ inputs.REACT_APP_API_AUTH_URL_PRD }}" ] || \
-           [ -z "${{ inputs.REACT_APP_API_COMPONENT_URL_PFV }}" ] || [ -z "${{ inputs.REACT_APP_API_COMPONENT_URL_PRD }}" ] || \
-           [ -z "${{ inputs.REACT_APP_URL }}" ] || [ -z "${{ inputs.REACT_APP_THEME }}" ] || \
-           [ -z "${{ inputs.REACT_APP_ENV }}" ] || [ -z "${{ inputs.REACT_APP_FRONT_AUTHENTIFICATION_PFV }}" ] || \
-           [ -z "${{ inputs.REACT_APP_FRONT_AUTHENTIFICATION_PRD }}" ] || [ -z "${{ inputs.TOKEN_GITHUB }}" ] || \
-           [ -z "${{ inputs.KUBECONFIG_PFV }}" ] || [ -z "${{ inputs.KUBECONFIG_PRD }}" ]; then
-          echo "Error: One or more required input variables are missing."
-          exit 1
-        fi
-      shell: bash
-
-    # Configurer Node.js
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '21.7.3'
-
-    # Vérifier si toutes les variables d'entrée sont définies
-    - name: Check input variables
-      run: |
-        if [ -z "${{ inputs.REACT_APP_API_AUTH_URL_PFV }}" ] || [ -z "${{ inputs.REACT_APP_API_AUTH_URL_PRD }}" ] || \
-           [ -z "${{ inputs.REACT_APP_API_COMPONENT_URL_PFV }}" ] || [ -z "${{ inputs.REACT_APP_API_COMPONENT_URL_PRD }}" ] || \
-           [ -z "${{ inputs.REACT_APP_URL }}" ] || [ -z "${{ inputs.REACT_APP_THEME }}" ] || \
-           [ -z "${{ inputs.REACT_APP_ENV }}" ] || [ -z "${{ inputs.REACT_APP_FRONT_AUTHENTIFICATION_PFV }}" ] || \
-           [ -z "${{ inputs.REACT_APP_FRONT_AUTHENTIFICATION_PRD }}" ] || [ -z "${{ inputs.TOKEN_GITHUB }}" ] || \
-           [ -z "${{ inputs.KUBECONFIG_PFV }}" ] || [ -z "${{ inputs.KUBECONFIG_PRD }}" ]; then
-          echo "Error: One or more required input variables are missing."
-          exit 1
-        fi
-      shell: bash
-
     # Configurer npm pour utiliser les URL SSH pour les paquets privés
     - name: Configure npm to use SSH for GitHub packages
       run: |
@@ -147,17 +120,10 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
-    # Ajouter la clé SSH pour le déploiement
-    - name: Set up SSH
-      uses: webfactory/ssh-agent@v0.8.1
-      with:
-        ssh-private-key: ${{ inputs.SSH_TEST  }}
 
     # Récupérer le dépôt du projet avec SSH
     - name: Checkout repository using SSH
       uses: actions/checkout@v3
-      with:
-        ssh-key: ${{ inputs.SSH_TEST  }}
 
     # Créer le fichier .env avec les variables nécessaires pour l'environnement PFV
     - name: Create .env file
@@ -175,7 +141,7 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
-        password: ${{ inputs.TOKEN_GITHUB }}
+        password: ${{ secrets.TOKEN_GITHUB }}
 
     # Construction et push de l'image Docker vers GitHub Container Registry
     - name: Build and push Docker image
@@ -233,7 +199,7 @@ jobs:
     - name: Configure kubeconfig
       run: |
         mkdir -p ~/.kube
-        echo "${{ inputs.KUBECONFIG_PFV }}" > ~/.kube/config
+        echo "${{ secrets.KUBECONFIG_PFV }}" > ~/.kube/config
         chmod 600 ~/.kube/config
 
     # Mettre à jour le release Helm pour Kubernetes
