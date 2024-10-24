@@ -39,34 +39,23 @@ on:
         description: "URL de l'authentification front PRD"
         required: true
         type: string
-      TOKEN_GITHUB:
-        description: "GitHub Token for repository access"
-        required: true
-        type: string
-      KUBECONFIG_PFV:
-        description: "Kubeconfig pfv for Helm"
-        required: true
-        type: string
-      KUBECONFIG_PRD:
-        description: "Kubeconfig prd for Helm"
-        required: true
-        type: string
       TAG_NAME:
         description: "Nom du tag GitHub pour versionner l'image"
         required: true
         type: string
-      GCP_SA_KEY_PFV:
-        description: "clé gcp key pfv"
+    secrets:
+      TOKEN_GITHUB:
         required: true
-        type: string
+      SSH_PRIVATE_KEY:
+        required: true
+      KUBECONFIG_PRD:
+        required: true
+      KUBECONFIG_PFV:
+        required: true
       GCP_SA_KEY_PRD:
-        description: "clé gcp key prd"
         required: true
-        type: string
-      SSH_TEST: 
-        description: "clé gcp key prd"
+      GCP_SA_KEY_PFV:
         required: true
-        type: string
     
 jobs:
   build-deploy:
@@ -91,7 +80,7 @@ jobs:
         echo "REACT_APP_FRONT_AUTHENTIFICATION=${{ inputs.REACT_APP_FRONT_AUTHENTIFICATION_PRD }}" >> .env
 
     - name: token github
-      run: git config --global url."https://${{ inputs.TOKEN_GITHUB }}@github.com/".insteadOf "https://github.com/"
+      run: git config --global url."https://${{ secrets.TOKEN_GITHUB }}@github.com/".insteadOf "https://github.com/"
 
     - name: Log in to GitHub Container Registry
       uses: docker/login-action@v3
@@ -125,7 +114,7 @@ jobs:
     - name: Configure kubeconfig
       run: |
         mkdir -p ~/.kube
-        echo "${{ inputs.KUBECONFIG_PRD }}" > ~/.kube/config
+        echo "${{ secrets.KUBECONFIG_PRD }}" > ~/.kube/config
         chmod 600 ~/.kube/config
 
     - name: Extract Tag
@@ -147,7 +136,7 @@ jobs:
   
     - name: Set up Google Cloud credentials (myhappyweb-pfv)
       run: |
-        echo '${{ inputs.GCP_SA_KEY_PFV }}' | sed 's/\\n/\\n/g' | jq . > "${HOME}/gcp-key.json"
+        echo '${{ secrets.GCP_SA_KEY_PFV }}' | sed 's/\\n/\\n/g' | jq . > "${HOME}/gcp-key.json"
             
       # Authentifier manuellement avec gcloud en utilisant la clé du compte de service
     - name: Authenticate with gcloud (myhappyweb-pfv)
@@ -163,7 +152,7 @@ jobs:
 
     - name: Set up Google Cloud credentials (myhappyweb-prd)
       run: |
-        echo '${{ inputs.GCP_SA_KEY_PRD }}' | sed 's/\\n/\\n/g' | jq . > "${HOME}/gcp-key.json"
+        echo '${{ secrets.GCP_SA_KEY_PRD }}' | sed 's/\\n/\\n/g' | jq . > "${HOME}/gcp-key.json"
           
     # Authentifier manuellement avec gcloud en utilisant la clé du compte de service
     - name: Authenticate with gcloud (myhappyweb-prd)
