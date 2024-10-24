@@ -81,13 +81,21 @@ jobs:
         git config --global url."git@github.com:".insteadOf "https://github.com/"
       # Cette étape force git à utiliser SSH pour tous les dépôts GitHub.
 
-    # Lancer le processus de build
+    # Installation des dépendances avec npm
+    - name: Install dependencies
+      run: npm install
+      # Installation des dépendances du projet avec npm.
+
+    # Lancer le processus de build pour React
+    - name: Build React app
+      run: npm run build
+      # Cette étape construit l'application React pour la production.
+
+    # Lancer le processus de build Docker sans refaire npm install
     - name: Build Docker image
       run: |
-        DOCKER_BUILDKIT=1 docker build --ssh default -t my-app:latest .
-      env:
-        DOCKER_BUILDKIT: 1  # Activer BuildKit pour une meilleure gestion des SSH
-      # Cette étape crée une image Docker de l'application avec l'accès SSH.
+        DOCKER_BUILDKIT=1 docker build -t my-app:latest .
+      # Cette étape crée une image Docker de l'application en copiant simplement les dépendances et les fichiers déjà construits.
 
   # Job de déploiement pour l'environnement PFV
   deploy_pfv:
