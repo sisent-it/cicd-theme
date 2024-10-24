@@ -39,26 +39,6 @@ on:
         description: "URL de l'authentification front PRD"
         required: true
         type: string
-      KUBECONFIG_PFV:
-        description: "Kubeconfig pfv for Helm"
-        required: true
-        type: string
-      KUBECONFIG_PRD:
-        description: "Kubeconfig prd for Helm"
-        required: true
-        type: string
-      GCP_SA_KEY_PFV:
-        description: "clé gcp key pfv"
-        required: true
-        type: string
-      GCP_SA_KEY_PRD:
-        description: "clé gcp key prd"
-        required: true
-        type: string
-      SSH_TEST : 
-        description: "clé gcp key prd"
-        required: true
-        type: string
     secrets:
       TOKEN_GITHUB:
         required: true
