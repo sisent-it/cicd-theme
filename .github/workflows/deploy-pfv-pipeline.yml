@@ -175,7 +175,7 @@ jobs:
     # Configuration des identifiants Google Cloud pour le projet PFV
     - name: Set up Google Cloud credentials (myhappyweb-pfv)
       run: |
-        echo '${{ inputs.GCP_SA_KEY_PFV }}' | sed 's/\\n/\\n/g' | jq . > "${HOME}/gcp-key.json"
+        echo '${{ secrets.GCP_SA_KEY_PFV }}' | sed 's/\\n/\\n/g' | jq . > "${HOME}/gcp-key.json"
 
     # Authentification manuelle avec gcloud en utilisant la clé du compte de service
     - name: Authenticate with gcloud (myhappyweb-pfv)
