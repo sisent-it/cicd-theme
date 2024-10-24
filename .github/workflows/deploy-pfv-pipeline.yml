@@ -161,7 +161,7 @@ jobs:
       run: |
         DOCKER_BUILDKIT=1 docker buildx create --use
         DOCKER_BUILDKIT=1 docker buildx build --platform linux/amd64,linux/arm64 \
-          -t ghcr.io/${{ github.repository }}:latest \
+          -t ghcr.io/${{ github.repository }}:latest-pfv \
           --build-arg ENV_FILE=.env \
           --push .
       # Cette étape construit et pousse l'image Docker vers le registre en utilisant BuildKit et en incluant le fichier `.env`.
@@ -235,6 +235,6 @@ jobs:
           --values ./helm-chart/values.yaml \
           --set release_name=default-${{ inputs.REACT_APP_THEME }}-myhappyweb-pfv-com \
           --set image.repository=ghcr.io/${{ github.repository }} \
-          --set image.tag=latest \
+          --set image.tag=latest-pfv \
           --recreate-pods
       # Met à jour ou installe un Helm release pour déployer l'application sur Kubernetes avec la nouvelle image Docker.
