@@ -92,7 +92,7 @@ jobs:
     # Configurer Git pour utiliser HTTPS et pas SSH
     - name: Force Git to use HTTPS instead of SSH
       run: |
-        git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
+        git config --global --unset url."ssh://git@github.com/".insteadOf
 
     # Configurer npm pour utiliser le token GitHub
     - name: Set up npm to use GitHub token
