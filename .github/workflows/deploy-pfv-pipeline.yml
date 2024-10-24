@@ -59,7 +59,7 @@ on:
         description: "clé gcp key prd"
         required: true
         type: string
-      SSH_TEST: 
+      SSH_PRIVATE_KEY : 
         description: "clé gcp key prd"
         required: true
         type: string
@@ -69,17 +69,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Ajouter une clé SSH (en supposant que la clé SSH privée est stockée dans un secret GitHub)
-    - name: Set up SSH
-      uses: webfactory/ssh-agent@v0.5.4
-      with:
-        ssh-private-key: ${{ inputs.SSH_TEST }}
-
-    # Récupérer le dépôt du projet avec SSH
-    - name: Checkout repository using SSH
+    # Récupérer le dépôt du projet
+    - name: Checkout repository
       uses: actions/checkout@v3
+
+    # Configurer Node.js
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
       with:
-        ssh-key: ${{ inputs.SSH_TEST }}
+        node-version: '21.7.3'
+
+    - name: Check input variables
+      run: echo ${{ secrets.ORG_TOKEN_GITHUB }}
+  
+    # Vérifier si toutes les variables d'entrée sont définies
+    - name: Check input variables
+      run: |
+        if [ -z "${{ inputs.REACT_APP_API_AUTH_URL_PFV }}" ] || [ -z "${{ inputs.REACT_APP_API_AUTH_URL_PRD }}" ] || \
+           [ -z "${{ inputs.REACT_APP_API_COMPONENT_URL_PFV }}" ] || [ -z "${{ inputs.REACT_APP_API_COMPONENT_URL_PRD }}" ] || \
+           [ -z "${{ inputs.REACT_APP_URL }}" ] || [ -z "${{ inputs.REACT_APP_THEME }}" ] || \
+           [ -z "${{ inputs.REACT_APP_ENV }}" ] || [ -z "${{ inputs.REACT_APP_FRONT_AUTHENTIFICATION_PFV }}" ] || \
+           [ -z "${{ inputs.REACT_APP_FRONT_AUTHENTIFICATION_PRD }}" ] || [ -z "${{ inputs.TOKEN_GITHUB }}" ] || \
+           [ -z "${{ inputs.KUBECONFIG_PFV }}" ] || [ -z "${{ inputs.KUBECONFIG_PRD }}" ]; then
+          echo "Error: One or more required input variables are missing."
+          exit 1
+        fi
+      shell: bash
 
     # Configurer Node.js
     - name: Set up Node.js
@@ -133,13 +148,13 @@ jobs:
     - name: Set up SSH
       uses: webfactory/ssh-agent@v0.8.1
       with:
-        ssh-private-key: ${{ inputs.SSH_TEST }}
+        ssh-private-key: ${{ inputs.SSH_PRIVATE_KEY  }}
 
     # Récupérer le dépôt du projet avec SSH
     - name: Checkout repository using SSH
       uses: actions/checkout@v3
       with:
-        ssh-key: ${{ inputs.SSH_TEST }}
+        ssh-key: ${{ inputs.SSH_PRIVATE_KEY  }}
 
     # Créer le fichier .env avec les variables nécessaires pour l'environnement PFV
     - name: Create .env file
