@@ -87,9 +87,11 @@ jobs:
         fi
       shell: bash
 
-    - name: token github
-      run: git config --global url."https://${{ inputs.TOKEN_GITHUB }}@github.com/".insteadOf "ssh://git@github.com/"
-
+    - name: Set up npm to use GitHub token
+      run: |
+        echo "//npm.pkg.github.com/:_authToken=${{ inputs.TOKEN_GITHUB }}" > ~/.npmrc
+        git config --global url."https://${{ inputs.TOKEN_GITHUB }}@github.com/".insteadOf "ssh://git@github.com/"
+    
 
     - name: Install dependencies
       run: npm install
