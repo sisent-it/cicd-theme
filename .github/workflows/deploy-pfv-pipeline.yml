@@ -75,29 +75,19 @@ jobs:
         echo "StrictHostKeyChecking no" >> ~/.ssh/config
       # Cela désactive la vérification stricte des clés hôtes pour éviter des erreurs lors de la connexion SSH.
 
-    # Configurer git pour utiliser SSH pour GitHub
+    # Configurer git pour utiliser SSH pour GitHub packages
     - name: Configure git to use SSH for GitHub packages
       run: |
         git config --global url."git@github.com:".insteadOf "https://github.com/"
       # Cette étape force git à utiliser SSH pour tous les dépôts GitHub.
 
-    # Installation des dépendances avec npm
-    - name: Install dependencies
-      run: npm install
-      # Installation des dépendances du projet avec npm.
-
     # Lancer le processus de build
-    - name: Run build
-      run: npm run build
-      # Construction du projet front-end.
-
-    # Construction de l'image Docker pour l'application
     - name: Build Docker image
       run: |
-        docker build -t my-app:latest .
+        DOCKER_BUILDKIT=1 docker build --ssh default -t my-app:latest .
       env:
-        DOCKER_BUILDKIT: 1  # Utilise BuildKit pour des builds plus rapides et plus efficaces.
-      # Cette étape crée une image Docker de l'application.
+        DOCKER_BUILDKIT: 1  # Activer BuildKit pour une meilleure gestion des SSH
+      # Cette étape crée une image Docker de l'application avec l'accès SSH.
 
   # Job de déploiement pour l'environnement PFV
   deploy_pfv:
@@ -110,7 +100,9 @@ jobs:
     # Récupérer le dépôt du projet avec SSH
     - name: Checkout repository using SSH
       uses: actions/checkout@v3
-      # Cette étape clone le dépôt via SSH.
+      with:
+        ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      # Cette étape clone le dépôt via SSH en utilisant la clé privée.
 
     # Créer le fichier .env avec les variables nécessaires pour l'environnement PFV
     - name: Create .env file
