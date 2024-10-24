@@ -65,15 +65,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    # Récupérer le dépôt du projet
     - name: Checkout repository
       uses: actions/checkout@v3
 
+    # Configurer Node.js
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '21.7.3'
 
-    # Vérifier si les variables d'entrée ne sont pas vides
+    # Vérifier si toutes les variables d'entrée sont définies
     - name: Check input variables
       run: |
         if [ -z "${{ inputs.REACT_APP_API_AUTH_URL_PFV }}" ] || [ -z "${{ inputs.REACT_APP_API_AUTH_URL_PRD }}" ] || \
@@ -87,35 +89,43 @@ jobs:
         fi
       shell: bash
 
+    # Configurer Git pour utiliser HTTPS et pas SSH
+    - name: Force Git to use HTTPS instead of SSH
+      run: |
+        git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
+
+    # Configurer npm pour utiliser le token GitHub
     - name: Set up npm to use GitHub token
       run: |
         echo "//npm.pkg.github.com/:_authToken=${{ inputs.TOKEN_GITHUB }}" > ~/.npmrc
-        git config --global url."https://${{ inputs.TOKEN_GITHUB }}@github.com/".insteadOf "ssh://git@github.com/"
-    
 
+    # Installation des dépendances avec npm
     - name: Install dependencies
       run: npm install
 
+    # Lancer le processus de build
     - name: Run build
       run: npm run build
 
-    # Test du Dockerfile pour vérifier la construction de l'image
+    # Construction de l'image Docker pour l'application
     - name: Build Docker image
       run: |
         docker build -t my-app:latest .
-      # Vérifier si Docker est installé
       env:
         DOCKER_BUILDKIT: 1  # Utilise BuildKit pour des builds plus rapides et plus efficaces
 
+  # Job de déploiement pour l'environnement PFV
   deploy_pfv:
     runs-on: ubuntu-latest
     needs: build
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
+    # Vérifier le dépôt du projet
     - name: Checkout repository
       uses: actions/checkout@v3
 
+    # Créer le fichier .env avec les variables nécessaires pour l'environnement PFV
     - name: Create .env file
       run: |
         echo "REACT_APP_API_AUTH_URL=${{ inputs.REACT_APP_API_AUTH_URL_PFV }}" >> .env
@@ -125,6 +135,7 @@ jobs:
         echo "REACT_APP_ENV=pfv" >> .env
         echo "REACT_APP_FRONT_AUTHENTIFICATION=${{ inputs.REACT_APP_FRONT_AUTHENTIFICATION_PFV }}" >> .env
 
+    # Connexion au registre des conteneurs GitHub
     - name: Log in to GitHub Container Registry
       uses: docker/login-action@v3
       with:
@@ -132,11 +143,13 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ inputs.TOKEN_GITHUB }}
 
+    # Construction et push de l'image Docker vers GitHub Container Registry
     - name: Build and push Docker image
       run: |
         docker buildx create --use
         docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/${{ github.repository }}:latest --push .
 
+    # Récupérer le dépôt Helm Chart
     - name: Checkout Helm Chart Repository
       uses: actions/checkout@v3
       with:
@@ -145,45 +158,51 @@ jobs:
         ref: main 
         token: ${{ inputs.TOKEN_GITHUB }}
 
+    # Installer Helm
     - name: Install Helm
       run: |
         curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
+    # Installer jq
     - name: Install jq
       run: sudo apt-get install -y jq
 
+    # Installer Google Cloud CLI
     - name: Install google-cloud-cli (includes gsutil)
       run: |
         sudo apt-get update && sudo apt-get install -y google-cloud-cli
   
+    # Configuration des identifiants Google Cloud pour le projet PFV
     - name: Set up Google Cloud credentials (myhappyweb-pfv)
       run: |
         echo '${{ inputs.GCP_SA_KEY_PFV }}' | sed 's/\\n/\\n/g' | jq . > "${HOME}/gcp-key.json"
 
-    # Authentifier manuellement avec gcloud en utilisant la clé du compte de service
+    # Authentification manuelle avec gcloud en utilisant la clé du compte de service
     - name: Authenticate with gcloud (myhappyweb-pfv)
       run: |
         gcloud auth activate-service-account --key-file="${HOME}/gcp-key.json"
         gcloud config set project myhappyweb-pfv
     
-    # Copier les fichiers du bucket source (myhappyweb-pfv)
+    # Copier les fichiers du bucket source Google Cloud vers un dossier local
     - name: Copy files from myhappyweb-pfv-site bucket to a local folder
       run: |
         mkdir -p ./bucket-content-site-pfv-${{ inputs.REACT_APP_THEME }}
         gsutil -m cp -r gs://myhappyweb-pfv-site/pfv/${{ inputs.REACT_APP_THEME }}/default-${{ inputs.REACT_APP_THEME }}.myhappyweb-pfv.com/* ./bucket-content-site-pfv-${{ inputs.REACT_APP_THEME }}
     
-    # Copier le repertoire dans le theme
+    # Copier le répertoire local vers le bucket de thème
     - name: Copy files from local folder to bucket theme
       run: |
         mv ./bucket-content-site-pfv-${{ inputs.REACT_APP_THEME }}/pfv-${{ inputs.REACT_APP_THEME }}-default-${{ inputs.REACT_APP_THEME }}.myhappyweb-pfv.com.json  ./bucket-content-site-pfv-${{ inputs.REACT_APP_THEME }}/${{ inputs.REACT_APP_THEME }}-default.json
         gsutil -m cp -r ./bucket-content-site-pfv-${{ inputs.REACT_APP_THEME }}/* gs://myhappyweb-pfv-theme/theme/${{ inputs.REACT_APP_THEME }}
   
+    # Configurer le kubeconfig pour Kubernetes
     - name: Configure kubeconfig
       run: |
         mkdir -p ~/.kube
         echo "${{ inputs.KUBECONFIG_PFV }}" > ~/.kube/config
         chmod 600 ~/.kube/config
 
+    # Mettre à jour le release Helm pour Kubernetes
     - name: Upgrade pfv Helm Release
       run: |
         helm upgrade --install default-${{ inputs.REACT_APP_THEME }}-myhappyweb-pfv-com --namespace site ./helm-chart \
