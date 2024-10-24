@@ -39,10 +39,6 @@ on:
         description: "URL de l'authentification front PRD"
         required: true
         type: string
-      TOKEN_GITHUB:
-        description: "GitHub Token for repository access"
-        required: true
-        type: string
       KUBECONFIG_PFV:
         description: "Kubeconfig pfv for Helm"
         required: true
