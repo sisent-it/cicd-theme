@@ -147,7 +147,7 @@ jobs:
     - name: Extract Tag
       run: echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
-    - name: Upgrade pfv Helm Release
+    - name: Upgrade prd Helm Release
       run: |
         helm upgrade --install default-${{ inputs.REACT_APP_THEME }}-myhappyweb-com --namespace site ./helm-chart \
           --values ./helm-chart/values.yaml \

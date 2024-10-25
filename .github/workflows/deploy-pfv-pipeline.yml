@@ -54,7 +54,7 @@ on:
         required: true
 
 jobs:
-  build:
+  build-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -89,52 +89,6 @@ jobs:
     # Lancer le processus de build pour React
     - name: Build React app
       run: npm run build
-      # Cette étape construit l'application React pour la production.
-
-    # Lancer le processus de build Docker sans refaire npm install
-    - name: Build Docker image
-      run: |
-        DOCKER_BUILDKIT=1 docker build -t my-app:latest .
-      # Cette étape crée une image Docker de l'application en copiant simplement les dépendances et les fichiers déjà construits.
-
-  deploy_pfv:
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-
-    steps:
-    # Récupérer le dépôt du projet
-    - name: Checkout repository
-      uses: actions/checkout@v3
-
-    # Configurer l'agent SSH pour utiliser la clé privée
-    - name: Setup SSH agent
-      uses: webfactory/ssh-agent@v0.5.3
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-      # Cette étape configure un agent SSH et ajoute la clé privée pour les connexions SSH.
-
-    # Désactiver la vérification stricte des clés hôtes pour SSH
-    - name: Disable host key checking
-      run: |
-        echo "StrictHostKeyChecking no" >> ~/.ssh/config
-      # Cela désactive la vérification stricte des clés hôtes pour éviter des erreurs lors de la connexion SSH.
-
-    # Configurer git pour utiliser SSH pour GitHub packages
-    - name: Configure git to use SSH for GitHub packages
-      run: |
-        git config --global url."git@github.com:".insteadOf "https://github.com/"
-      # Cette étape force git à utiliser SSH pour tous les dépôts GitHub.
-
-    # Installation des dépendances avec npm
-    - name: Install dependencies
-      run: npm install
-      # Installation des dépendances du projet avec npm.
-
-    # Lancer le processus de build pour React
-    - name: Build React app
-      run: npm run build
-      # Cette étape construit l'application React pour la production.
 
     # Créer le fichier .env avec les variables nécessaires pour l'environnement PFV
     - name: Create .env file
