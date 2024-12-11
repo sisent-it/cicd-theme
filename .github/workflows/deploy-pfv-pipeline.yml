@@ -39,11 +39,11 @@ on:
         description: "URL de l'authentification front PRD"
         required: true
         type: string
-      REACT_APP_API_ANALYTICS_URL_PFV:
+      REACT_APP_API_ANALYTICS_PFV:
         description: "URL de l'authentification front PRD"
         required: true
         type: string
-      REACT_APP_API_ANALYTICS_URL_Prd:
+      REACT_APP_API_ANALYTICS_PRD:
         description: "URL de l'authentification front PRD"
         required: true
         type: string
@@ -108,7 +108,7 @@ jobs:
         echo "REACT_APP_THEME=${{ inputs.REACT_APP_THEME }}" >> .env
         echo "REACT_APP_ENV=pfv" >> .env
         echo "REACT_APP_FRONT_AUTHENTIFICATION=${{ inputs.REACT_APP_FRONT_AUTHENTIFICATION_PFV }}" >> .env
-        echo "REACT_APP_API_ANALYTICS_URL=${{ inputs.REACT_APP_API_ANALYTICS_URL_PFV }}" >> .env
+        echo "REACT_APP_API_ANALYTICS_URL=${{ inputs.REACT_APP_API_ANALYTICS_PFV }}" >> .env
       # Génération du fichier .env pour l'environnement PFV.
 
     - name: print env
