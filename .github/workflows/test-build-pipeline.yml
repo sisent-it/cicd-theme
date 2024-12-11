@@ -39,6 +39,14 @@ on:
         description: "URL de l'authentification front PRD"
         required: true
         type: string
+      REACT_APP_API_ANALYTICS_URL_PFV:
+        description: "URL de l'authentification front PRD"
+        required: true
+        type: string
+      REACT_APP_API_ANALYTICS_URL_Prd:
+        description: "URL de l'authentification front PRD"
+        required: true
+        type: string
     secrets:
       TOKEN_GITHUB:
         required: true
