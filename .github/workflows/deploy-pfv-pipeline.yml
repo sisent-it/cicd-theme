@@ -111,6 +111,8 @@ jobs:
         echo "REACT_APP_API_ANALYTICS_URL=${{ inputs.REACT_APP_API_ANALYTICS_URL_PFV }}" >> .env
       # Génération du fichier .env pour l'environnement PFV.
 
+    - name: print env
+      run: cat .env
     # Connexion au registre des conteneurs GitHub
     - name: Log in to GitHub Container Registry
       uses: docker/login-action@v3
