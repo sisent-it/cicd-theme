@@ -73,8 +73,6 @@ on:
         required: true
       GCP_SA_KEY_PFV:
         required: true
-      REACT_APP_AUTH_PASSWORD:
-        required: true
       REACT_APP_AUTH_PASSWORD_PFV:
         required: true
       REACT_APP_AUTH_PASSWORD_PRD:
