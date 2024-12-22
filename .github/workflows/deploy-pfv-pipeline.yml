@@ -47,7 +47,15 @@ on:
         description: "URL de l'authentification front PRD"
         required: true
         type: string
-                
+      REACT_APP_API_MAIL_URL:
+        description: "URL de l'API Mail PFV"
+        required: true
+        type: string
+      REACT_APP_AUTH_USERNAME:
+        description: "Nom d'utilisateur pour l'authentification"
+        required: true
+        type: string
+        
     secrets:
       TOKEN_GITHUB:
         required: true
@@ -61,7 +69,9 @@ on:
         required: true
       GCP_SA_KEY_PFV:
         required: true
-
+      REACT_APP_AUTH_PASSWORD:
+        required: true
+  
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
