@@ -47,15 +47,19 @@ on:
         description: "URL de l'authentification front PRD"
         required: true
         type: string
-      REACT_APP_API_MAIL_URL:
+      REACT_APP_API_MAIL_URL_PFV:
         description: "URL de l'API Mail PFV"
+        required: true
+        type: string
+      REACT_APP_API_MAIL_URL_PRD:
+        description: "URL de l'API Mail PRD"
         required: true
         type: string
       REACT_APP_AUTH_USERNAME:
         description: "Nom d'utilisateur pour l'authentification"
         required: true
         type: string
-        
+
     secrets:
       TOKEN_GITHUB:
         required: true
@@ -69,9 +73,11 @@ on:
         required: true
       GCP_SA_KEY_PFV:
         required: true
-      REACT_APP_AUTH_PASSWORD:
+      REACT_APP_AUTH_PASSWORD_PFV:
         required: true
-  
+      REACT_APP_AUTH_PASSWORD_PRD:
+        required: true
+
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
@@ -119,6 +125,10 @@ jobs:
         echo "REACT_APP_ENV=pfv" >> .env
         echo "REACT_APP_FRONT_AUTHENTIFICATION=${{ inputs.REACT_APP_FRONT_AUTHENTIFICATION_PFV }}" >> .env
         echo "REACT_APP_API_ANALYTICS_URL=${{ inputs.REACT_APP_API_ANALYTICS_PFV }}" >> .env
+        echo "REACT_APP_API_MAIL_URL=${{ inputs.REACT_APP_API_MAIL_URL_PFV }}" >> .env
+        echo "REACT_APP_AUTH_USERNAME=${{ inputs.REACT_APP_AUTH_USERNAME }}" >> .env
+        echo "REACT_APP_AUTH_PASSWORD=${{ secrets.REACT_APP_AUTH_PASSWORD_PFV }}" >> .env
+
       # Génération du fichier .env pour l'environnement PFV.
 
     - name: print env
