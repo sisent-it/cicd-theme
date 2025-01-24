@@ -142,14 +142,15 @@ jobs:
 
     # Cette étape construit et pousse l'image Docker vers le registre en utilisant BuildKit et en incluant le fichier `.env`.
 
-    - name: Build and push Docker image with Tag
+    - name: Build and push Docker image with Tag and Latest
       run: |
           DOCKER_BUILDKIT=1 docker buildx create --use
           DOCKER_BUILDKIT=1 docker buildx build --platform linux/amd64,linux/arm64 \
           -t ghcr.io/${{ github.repository }}:${{ inputs.TAG_NAME }} \
+          -t ghcr.io/${{ github.repository }}:latest \
           --build-arg ENV_FILE=.env \
           --push .
-  
+    
     # Récupérer le dépôt Helm Chart via SSH
     - name: Checkout Helm Chart Repository using SSH
       uses: actions/checkout@v3
