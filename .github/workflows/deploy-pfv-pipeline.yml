@@ -140,6 +140,19 @@ jobs:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.TOKEN_GITHUB }}
+
+    - name: Générer package.json pour public avec les dépendances filtrées
+      run: |
+        node -e "const fs = require('fs'); \
+        const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8')); \
+        const deps = pkg.dependencies; \
+        Object.keys(deps).forEach(key => { \
+          if (deps[key].includes('/')) { \
+            deps[key] = deps[key].split('/').pop(); \
+          } \
+        }); \
+        fs.writeFileSync('public/pkg.json', JSON.stringify({ dependencies: deps }, null, 2));"
+      
       # Connexion au registre GitHub pour le push des images Docker.
 
     # Construction et push de l'image Docker vers GitHub Container Registry en incluant le fichier .env
