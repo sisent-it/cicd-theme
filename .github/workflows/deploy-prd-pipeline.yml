@@ -140,6 +140,18 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.TOKEN_GITHUB }}
 
+    - name: Generate pkg.json
+      run: |
+        node -e "const fs = require('fs'); \
+        const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8')); \
+        const deps = pkg.dependencies; \
+        Object.keys(deps).forEach(key => { \
+          if (deps[key].includes('/')) { \
+            deps[key] = deps[key].split('/').pop(); \
+          } \
+        }); \
+        fs.writeFileSync('public/pkg.json', JSON.stringify({ dependencies: deps }, null, 2));"
+          
     # Cette étape construit et pousse l'image Docker vers le registre en utilisant BuildKit et en incluant le fichier `.env`.
 
     - name: Build and push Docker image with Tag and Latest

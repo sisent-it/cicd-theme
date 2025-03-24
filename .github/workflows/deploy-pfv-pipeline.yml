@@ -141,7 +141,7 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.TOKEN_GITHUB }}
 
-    - name: Générer package.json pour public avec les dépendances filtrées
+    - name: Generate pkg.json
       run: |
         node -e "const fs = require('fs'); \
         const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8')); \
@@ -153,8 +153,6 @@ jobs:
         }); \
         fs.writeFileSync('public/pkg.json', JSON.stringify({ dependencies: deps }, null, 2));"
       
-      # Connexion au registre GitHub pour le push des images Docker.
-
     # Construction et push de l'image Docker vers GitHub Container Registry en incluant le fichier .env
     - name: Build and push Docker image
       run: |
